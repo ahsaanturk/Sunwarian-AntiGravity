@@ -611,6 +611,35 @@ const MainApp = () => {
                 </Link>
             </nav>
 
+            {/* PWA Install Button / Open App Button - Only for Browser */}
+            {!window.matchMedia('(display-mode: standalone)').matches && (
+                <div className="fixed bottom-24 right-4 z-40">
+                    {installPrompt ? (
+                        <button
+                            onClick={() => {
+                                installPrompt.prompt();
+                                installPrompt.userChoice.then((choiceResult: any) => {
+                                    if (choiceResult.outcome === 'accepted') {
+                                        setInstallPrompt(null);
+                                    }
+                                });
+                            }}
+                            className="bg-emerald-600/90 backdrop-blur text-white px-4 py-3 rounded-full shadow-xl flex items-center gap-2 animate-bounce hover:bg-emerald-700 transition-colors"
+                        >
+                            <i className="fas fa-download"></i>
+                            <span className="text-xs font-bold">{t.installAppBtn}</span>
+                        </button>
+                    ) : (
+                        <button
+                            className="bg-gray-100/80 backdrop-blur text-emerald-800 px-4 py-3 rounded-full shadow-lg flex items-center gap-2 border border-emerald-200"
+                        >
+                            <i className="fas fa-external-link-alt"></i>
+                            <span className="text-xs font-bold">Open App</span>
+                        </button>
+                    )}
+                </div>
+            )}
+
             {isLocalAdminOpen && (
                 <AdminPanel
                     data={activeTimings}
