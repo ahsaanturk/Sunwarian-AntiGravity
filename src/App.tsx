@@ -591,6 +591,35 @@ const MainApp = () => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* PWA Install / Open App Button (Inside Settings) */}
+                            {!window.matchMedia('(display-mode: standalone)').matches && (
+                                <div className="mt-8 pt-6 border-t border-gray-100">
+                                    {installPrompt ? (
+                                        <button
+                                            onClick={() => {
+                                                installPrompt.prompt();
+                                                installPrompt.userChoice.then((choiceResult: any) => {
+                                                    if (choiceResult.outcome === 'accepted') {
+                                                        setInstallPrompt(null);
+                                                    }
+                                                });
+                                            }}
+                                            className="w-full bg-emerald-600/90 backdrop-blur text-white px-4 py-3 rounded-xl shadow-lg flex justify-center items-center gap-2 hover:bg-emerald-700 transition-colors"
+                                        >
+                                            <i className="fas fa-download"></i>
+                                            <span className="font-bold">{t.installAppBtn}</span>
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="w-full bg-gray-50 text-emerald-800 px-4 py-3 rounded-xl border border-emerald-100 flex justify-center items-center gap-2"
+                                        >
+                                            <i className="fas fa-external-link-alt"></i>
+                                            <span className="font-bold">Open App</span>
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -611,34 +640,7 @@ const MainApp = () => {
                 </Link>
             </nav>
 
-            {/* PWA Install Button / Open App Button - Only for Browser */}
-            {!window.matchMedia('(display-mode: standalone)').matches && (
-                <div className="fixed bottom-24 right-4 z-40">
-                    {installPrompt ? (
-                        <button
-                            onClick={() => {
-                                installPrompt.prompt();
-                                installPrompt.userChoice.then((choiceResult: any) => {
-                                    if (choiceResult.outcome === 'accepted') {
-                                        setInstallPrompt(null);
-                                    }
-                                });
-                            }}
-                            className="bg-emerald-600/90 backdrop-blur text-white px-4 py-3 rounded-full shadow-xl flex items-center gap-2 animate-bounce hover:bg-emerald-700 transition-colors"
-                        >
-                            <i className="fas fa-download"></i>
-                            <span className="text-xs font-bold">{t.installAppBtn}</span>
-                        </button>
-                    ) : (
-                        <button
-                            className="bg-gray-100/80 backdrop-blur text-emerald-800 px-4 py-3 rounded-full shadow-lg flex items-center gap-2 border border-emerald-200"
-                        >
-                            <i className="fas fa-external-link-alt"></i>
-                            <span className="text-xs font-bold">Open App</span>
-                        </button>
-                    )}
-                </div>
-            )}
+
 
             {isLocalAdminOpen && (
                 <AdminPanel
