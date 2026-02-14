@@ -133,4 +133,10 @@ export interface Translation {
   // PWA Features
   installAppBtn: string;
   keepScreenOn: string;
+  installModalTitle: string;
+  installModalDesc: string;
+  installModalStep1: string;
+  installModalStep2: string;
+  iosShareIcon: string;
+  iosAddIcon: string;
 }

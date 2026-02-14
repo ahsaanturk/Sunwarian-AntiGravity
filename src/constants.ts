@@ -185,7 +185,13 @@ export const TRANSLATIONS: Record<Language, Translation> = {
 
     // PWA Features
     installAppBtn: "Install App",
-    keepScreenOn: "Keep Screen Awake"
+    keepScreenOn: "Keep Screen Awake",
+    installModalTitle: "Install App",
+    installModalDesc: "To install this app on your iPhone/iPad:",
+    installModalStep1: "Tap the Share button",
+    installModalStep2: "Scroll down and tap 'Add to Home Screen'",
+    iosShareIcon: "Share",
+    iosAddIcon: "Add to Home Screen"
   },
   ur: {
     title: "روزہ دار ایپ",
@@ -270,6 +276,12 @@ export const TRANSLATIONS: Record<Language, Translation> = {
 
     // PWA Features
     installAppBtn: "ایپ انسٹال کریں",
-    keepScreenOn: "اسکرین آن رکھیں"
+    keepScreenOn: "اسکرین آن رکھیں",
+    installModalTitle: "ایپ انسٹال کریں",
+    installModalDesc: "آئی فون پر انسٹال کرنے کا طریقہ:",
+    installModalStep1: "شیئر بٹن دبائیں",
+    installModalStep2: "'Add to Home Screen' منتخب کریں",
+    iosShareIcon: "شیئر",
+    iosAddIcon: "Add to Home Screen"
   }
 };

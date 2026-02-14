@@ -220,13 +220,21 @@ const MainApp = () => {
         else if (location.pathname === GLOBAL_ADMIN_ROUTE) setIsGlobalAdminOpen(true);
     }, [location]);
 
-    // PWA Install Prompt State
+    // PWA Install Logic
     const [installPrompt, setInstallPrompt] = useState<any>(null);
-    const [isWakeLockActive, setIsWakeLockActive] = useState(false);
-    const wakeLockRef = React.useRef<any>(null);
+    const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+    const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
-        // Handle PWA Install Prompt
+        // Check if running in standalone mode
+        const checkStandalone = () => {
+            const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
+            setIsStandalone(!!isStandaloneMode);
+        };
+
+        checkStandalone();
+        window.matchMedia('(display-mode: standalone)').addEventListener('change', checkStandalone);
+
         const handleBeforeInstallPrompt = (e: any) => {
             e.preventDefault();
             setInstallPrompt(e);
@@ -234,7 +242,31 @@ const MainApp = () => {
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-        // Handle Wake Lock
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.matchMedia('(display-mode: standalone)').removeEventListener('change', checkStandalone);
+        };
+    }, []);
+
+    const handleInstallClick = () => {
+        if (installPrompt) {
+            installPrompt.prompt();
+            installPrompt.userChoice.then((choiceResult: any) => {
+                if (choiceResult.outcome === 'accepted') {
+                    setInstallPrompt(null);
+                }
+            });
+        } else {
+            // Fallback: Show manual instructions (e.g., for iOS)
+            setIsInstallModalOpen(true);
+        }
+    };
+
+    // Wake Lock Logic
+    const [isWakeLockActive, setIsWakeLockActive] = useState(false);
+    const wakeLockRef = React.useRef<any>(null);
+
+    useEffect(() => {
         const requestWakeLock = async () => {
             if (settings.wakeLockEnabled && 'wakeLock' in navigator) {
                 try {
@@ -257,7 +289,6 @@ const MainApp = () => {
             }
         };
 
-        // Handle visibility change (re-request wake lock if tab becomes visible)
         const handleVisibilityChange = async () => {
             if (settings.wakeLockEnabled && document.visibilityState === 'visible') {
                 await requestWakeLock();
@@ -273,21 +304,10 @@ const MainApp = () => {
         }
 
         return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             releaseWakeLock();
         };
     }, [settings.wakeLockEnabled]);
-
-    const handleInstallClick = () => {
-        if (!installPrompt) return;
-        installPrompt.prompt();
-        installPrompt.userChoice.then((choiceResult: any) => {
-            if (choiceResult.outcome === 'accepted') {
-                setInstallPrompt(null);
-            }
-        });
-    };
 
     const toggleLanguage = () => {
         const newLang: Language = settings.language === 'en' ? 'ur' : 'en';
@@ -429,8 +449,8 @@ const MainApp = () => {
                                 </div>
                             </div>
 
-                            {/* PWA: Install App Button (Only visible if prompt available) */}
-                            {installPrompt && (
+                            {/* PWA: Install App Button (Visible if NOT standalone) */}
+                            {!isStandalone && (
                                 <button
                                     onClick={handleInstallClick}
                                     className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-5 rounded-2xl shadow-lg shadow-emerald-200 flex justify-between items-center transform transition-transform active:scale-[0.98]"
@@ -591,35 +611,6 @@ const MainApp = () => {
                                     </div>
                                 </div>
                             )}
-
-                            {/* PWA Install / Open App Button (Inside Settings) */}
-                            {!window.matchMedia('(display-mode: standalone)').matches && (
-                                <div className="mt-8 pt-6 border-t border-gray-100">
-                                    {installPrompt ? (
-                                        <button
-                                            onClick={() => {
-                                                installPrompt.prompt();
-                                                installPrompt.userChoice.then((choiceResult: any) => {
-                                                    if (choiceResult.outcome === 'accepted') {
-                                                        setInstallPrompt(null);
-                                                    }
-                                                });
-                                            }}
-                                            className="w-full bg-emerald-600/90 backdrop-blur text-white px-4 py-3 rounded-xl shadow-lg flex justify-center items-center gap-2 hover:bg-emerald-700 transition-colors"
-                                        >
-                                            <i className="fas fa-download"></i>
-                                            <span className="font-bold">{t.installAppBtn}</span>
-                                        </button>
-                                    ) : (
-                                        <button
-                                            className="w-full bg-gray-50 text-emerald-800 px-4 py-3 rounded-xl border border-emerald-100 flex justify-center items-center gap-2"
-                                        >
-                                            <i className="fas fa-external-link-alt"></i>
-                                            <span className="font-bold">Open App</span>
-                                        </button>
-                                    )}
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -639,8 +630,6 @@ const MainApp = () => {
                     <span className="text-[10px] font-bold">{t.settings}</span>
                 </Link>
             </nav>
-
-
 
             {isLocalAdminOpen && (
                 <AdminPanel
@@ -664,6 +653,51 @@ const MainApp = () => {
                     translation={t}
                     onClose={() => { setIsGlobalAdminOpen(false); navigate('/'); }}
                 />
+            )}
+
+            {/* iOS / Manual Install Instructions Modal */}
+            {isInstallModalOpen && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-6">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsInstallModalOpen(false)}></div>
+                    <div className="relative bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-slide-up">
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className={`text-xl font-bold text-gray-800 ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>
+                                {t.installModalTitle}
+                            </h3>
+                            <button onClick={() => setIsInstallModalOpen(false)} className="text-gray-400 hover:text-red-500">
+                                <i className="fas fa-times-circle text-2xl"></i>
+                            </button>
+                        </div>
+
+                        <p className="text-gray-600 mb-6 text-sm">{t.installModalDesc}</p>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <i className="fas fa-share-square text-blue-500 text-2xl"></i>
+                                <div>
+                                    <p className="font-bold text-gray-800 text-sm">{t.installModalStep1}</p>
+                                    <p className="text-xs text-gray-500">{t.iosShareIcon}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <i className="fas fa-plus-square text-gray-700 text-2xl"></i>
+                                <div>
+                                    <p className="font-bold text-gray-800 text-sm">{t.installModalStep2}</p>
+                                    <p className="text-xs text-gray-500">{t.iosAddIcon}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 text-center">
+                            <button
+                                onClick={() => setIsInstallModalOpen(false)}
+                                className="text-emerald-600 font-bold text-sm"
+                            >
+                                {t.close}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
