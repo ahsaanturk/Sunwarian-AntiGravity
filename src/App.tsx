@@ -449,21 +449,7 @@ const MainApp = () => {
                                 </div>
                             </div>
 
-                            {/* PWA: Install App Button (Visible if NOT standalone) */}
-                            {!isStandalone && (
-                                <button
-                                    onClick={handleInstallClick}
-                                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-5 rounded-2xl shadow-lg shadow-emerald-200 flex justify-between items-center transform transition-transform active:scale-[0.98]"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl backdrop-blur-sm">
-                                            <i className="fas fa-download"></i>
-                                        </div>
-                                        <span className={`font-bold text-lg ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>{t.installAppBtn}</span>
-                                    </div>
-                                    <i className="fas fa-chevron-right text-emerald-100"></i>
-                                </button>
-                            )}
+
 
                             {/* PWA: Wake Lock Toggle */}
                             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
@@ -512,6 +498,22 @@ const MainApp = () => {
                                 </div>
                                 <i className="fas fa-external-link-alt text-gray-300 text-xs"></i>
                             </a>
+
+                            {/* PWA: Install App Button (Visible if NOT standalone) */}
+                            {!isStandalone && (
+                                <button
+                                    onClick={handleInstallClick}
+                                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-5 rounded-2xl shadow-lg shadow-emerald-200 flex justify-between items-center transform transition-transform active:scale-[0.98]"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl backdrop-blur-sm">
+                                            <i className="fas fa-download"></i>
+                                        </div>
+                                        <span className={`font-bold text-lg ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>{t.installAppBtn}</span>
+                                    </div>
+                                    <i className="fas fa-chevron-right text-emerald-100"></i>
+                                </button>
+                            )}
 
                             <div className="pt-4 text-center">
                                 <Link to={ADMIN_ROUTE} className="text-gray-400 text-xs py-2 px-6 rounded-full border border-gray-200">
