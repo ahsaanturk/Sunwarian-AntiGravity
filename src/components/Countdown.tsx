@@ -23,7 +23,7 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
     const calculateTime = () => {
       const now = getTrueDate();
       const todayStr = now.toISOString().split('T')[0];
-      
+
       const todayTiming = timings.find(t => t.date === todayStr);
       let targetDate: Date | null = null;
       let label = '';
@@ -38,11 +38,11 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
         const fiveMinsAfterIftar = new Date(iftarTime.getTime() + 5 * 60 * 1000);
 
         if (now >= sehriTime && now < fiveMinsAfterSehri) {
-            setIsBlinking(true);
+          setIsBlinking(true);
         } else if (now >= iftarTime && now < fiveMinsAfterIftar) {
-            setIsBlinking(true);
+          setIsBlinking(true);
         } else {
-            setIsBlinking(false);
+          setIsBlinking(false);
         }
 
         if (now < sehriTime) {
@@ -88,33 +88,33 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
       );
 
       if (settings.notificationsEnabled) {
-         const totalMinutesLeft = Math.floor(diff / 60000);
-         const secondsLeft = Math.floor((diff % 60000) / 1000);
+        const totalMinutesLeft = Math.floor(diff / 60000);
+        const secondsLeft = Math.floor((diff % 60000) / 1000);
 
-         // Pre-Sehri Alert
-         if (isSehri && settings.sehriAlertOffset > 0) {
-             if (totalMinutesLeft === settings.sehriAlertOffset && secondsLeft === 0) {
-                 const msg = settings.sehriAlertOffset === 60 ? translation.sehriAlert1Hour : `${settings.sehriAlertOffset} ${translation.minutes} remaining for Sehri!`;
-                 sendNotification(translation.ramadanAlert, msg);
-                 playAlarm('beep');
-             }
-         }
+        // Pre-Sehri Alert
+        if (isSehri && settings.sehriAlertOffset > 0) {
+          if (totalMinutesLeft === settings.sehriAlertOffset && secondsLeft === 0) {
+            const msg = settings.sehriAlertOffset === 60 ? translation.sehriAlert1Hour : `${settings.sehriAlertOffset} ${translation.minutes} remaining for Sehri!`;
+            sendNotification(translation.ramadanAlert, msg);
+            playAlarm('beep');
+          }
+        }
 
-         // Pre-Iftar Alert
-         if (!isSehri && settings.iftarAlertOffset > 0) {
-             if (totalMinutesLeft === settings.iftarAlertOffset && secondsLeft === 0) {
-                 const msg = settings.iftarAlertOffset === 20 ? translation.iftarAlert20Min : `${settings.iftarAlertOffset} ${translation.minutes} remaining for Iftar!`;
-                 sendNotification(translation.ramadanAlert, msg);
-                 playAlarm('beep');
-             }
-         }
+        // Pre-Iftar Alert
+        if (!isSehri && settings.iftarAlertOffset > 0) {
+          if (totalMinutesLeft === settings.iftarAlertOffset && secondsLeft === 0) {
+            const msg = settings.iftarAlertOffset === 20 ? translation.iftarAlert20Min : `${settings.iftarAlertOffset} ${translation.minutes} remaining for Iftar!`;
+            sendNotification(translation.ramadanAlert, msg);
+            playAlarm('beep');
+          }
+        }
 
-         // Exact Time Alert
-         if (hours === 0 && minutes === 0 && seconds === 0) {
-             const msg = isSehri ? translation.sehriEnded : translation.iftarTime;
-             sendNotification(translation.ramadanAlert, msg);
-             playAlarm('alarm');
-         }
+        // Exact Time Alert
+        if (hours === 0 && minutes === 0 && seconds === 0) {
+          const msg = isSehri ? translation.sehriEnded : translation.iftarTime;
+          sendNotification(translation.ramadanAlert, msg);
+          playAlarm('alarm');
+        }
       }
     };
 
@@ -125,10 +125,10 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
 
   const handleScroll = () => {
     if (scrollContainerRef.current) {
-        const scrollLeft = scrollContainerRef.current.scrollLeft;
-        const width = scrollContainerRef.current.offsetWidth;
-        const index = Math.round(scrollLeft / width);
-        setActiveIndex(index);
+      const scrollLeft = scrollContainerRef.current.scrollLeft;
+      const width = scrollContainerRef.current.offsetWidth;
+      const index = Math.round(scrollLeft / width);
+      setActiveIndex(index);
     }
   };
 
@@ -139,38 +139,38 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
       <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-emerald-400 rounded-full opacity-30 blur-2xl"></div>
 
       {/* Swipeable Container */}
-      <div 
+      <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
         className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth relative z-10"
       >
         {/* Slide 1: Countdown */}
         <div className="min-w-full snap-center flex flex-col items-center justify-center p-8 text-white text-center">
-            <p className="text-emerald-100 text-[10px] font-bold tracking-widest mb-1 uppercase opacity-80">{translation.next}</p>
-            <h2 className="text-xl font-bold mb-2">{nextEventLabel}</h2>
-            <div className="text-6xl font-mono font-bold my-1 tracking-tighter tabular-nums drop-shadow-lg">
-                {timeLeft}
-            </div>
-            <p className="text-[10px] text-emerald-100/60 mt-2 uppercase tracking-widest">{translation.timeLeft}</p>
+          <p className="text-emerald-100 text-[10px] font-bold tracking-widest mb-1 uppercase opacity-80">{translation.next}</p>
+          <h2 className="text-xl font-bold mb-2">{nextEventLabel}</h2>
+          <div className="text-6xl font-mono font-bold my-1 tracking-tighter tabular-nums drop-shadow-lg">
+            {timeLeft}
+          </div>
+          <p className="text-[10px] text-emerald-100/60 mt-2 uppercase tracking-widest">{translation.timeLeft}</p>
         </div>
 
         {/* Slide 2: Target Time */}
         <div className="min-w-full snap-center flex flex-col items-center justify-center p-8 text-white text-center">
-            <p className="text-emerald-100 text-[10px] font-bold tracking-widest mb-1 uppercase opacity-80">{translation.eventTimeLabel}</p>
-            <h2 className="text-xl font-bold mb-2">{nextEventLabel}</h2>
-            <div className="text-5xl font-mono font-bold my-1 tracking-tighter tabular-nums drop-shadow-lg">
-                {formatTo12h(exactTime)}
-            </div>
-            <p className="text-[10px] text-emerald-100/60 mt-2 uppercase tracking-widest">12H FORMAT</p>
+          <p className="text-emerald-100 text-[10px] font-bold tracking-widest mb-1 uppercase opacity-80">{translation.eventTimeLabel}</p>
+          <h2 className="text-xl font-bold mb-2">{nextEventLabel}</h2>
+          <div className="text-5xl font-mono font-bold my-1 tracking-tighter tabular-nums drop-shadow-lg">
+            {formatTo12h(exactTime)}
+          </div>
+          <p className="text-[10px] text-emerald-100/60 mt-2 uppercase tracking-widest">12H FORMAT</p>
         </div>
       </div>
 
       {/* Hijri Info Overlay */}
       {activeTiming && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20 text-emerald-100/90 text-[10px] bg-emerald-700/30 px-4 py-1 rounded-full backdrop-blur-sm border border-white/10">
-            <span>Ramadan {activeTiming.hijri_date}</span>
-            <span>•</span>
-            <span>{activeTiming.day_ur}</span>
+          <span>Ramadan {activeTiming.hijri_date}</span>
+          <span>•</span>
+          <span>{activeTiming.day_ur}</span>
         </div>
       )}
 

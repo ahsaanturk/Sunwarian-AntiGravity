@@ -34,13 +34,13 @@ const LocationSchema = new mongoose.Schema({
   name_ur: String,
   timings: [TimingSchema],
   whatsapp_number: String,
-  custom_message: String,
+  custom_message: { en: String, ur: String },
   whatsapp_community: String
 });
 
 const NoteSchema = new mongoose.Schema({
   id: { type: String, unique: true },
-  text: String,
+  text: { en: String, ur: String },
   isGlobal: Boolean,
   locationId: String
 });

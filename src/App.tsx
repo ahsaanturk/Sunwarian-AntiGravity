@@ -84,71 +84,136 @@ const MainApp = () => {
         }
     };
 
+    const checkConnectivity = async () => {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000); // Fail fast after 2 seconds
+
+            // Using a timestamp to bypass cache and ensure real network verification
+            const res = await fetch(`/?nocache=${Date.now()}`, {
+                method: 'HEAD',
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            const online = res.ok;
+            setIsOnline(online);
+            return online;
+        } catch (e) {
+            setIsOnline(false);
+            return false;
+        }
+    };
+
     useEffect(() => {
-        const handleOnline = () => {
-            setIsOnline(true);
-            performTimeSync();
-        };
+        const handleOnline = () => checkConnectivity();
         const handleOffline = () => setIsOnline(false);
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') checkConnectivity();
+        };
+        const handleFocus = () => checkConnectivity();
 
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
 
         setMasterData(getStoredData());
         setNotesData(getStoredNotes());
 
-        if (navigator.onLine) {
-            performTimeSync();
-
-            // Prefetch Dua Audio for Offline Use
-            prefetchAudio(DUAS.sehri.arabic, 'sehri_dua');
-            prefetchAudio(DUAS.iftar.arabic, 'iftar_dua');
-        }
+        // Initial check
+        checkConnectivity().then(online => {
+            if (online) {
+                performTimeSync();
+                // Prefetch Dua Audio for Offline Use
+                prefetchAudio(DUAS.sehri.arabic, 'sehri_dua');
+                prefetchAudio(DUAS.iftar.arabic, 'iftar_dua');
+            }
+        });
 
         const clockTimer = setInterval(() => {
             setCurrentTime(getTrueDate());
         }, 1000);
 
+        // Aggressive "Heartbeat" (Every 2 Seconds)
+        const connectivityInterval = setInterval(() => {
+            checkConnectivity();
+        }, 2000);
+
         return () => {
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
             clearInterval(clockTimer);
+            clearInterval(connectivityInterval);
         };
     }, []);
 
-    useEffect(() => {
-        if (settings.autoSync && isOnline) {
-            // Fetch Locations
-            fetch(REMOTE_DATA_URL)
-                .then(res => res.ok ? res.json() : null)
-                .then((remoteMaster: LocationData[]) => {
-                    if (Array.isArray(remoteMaster) && remoteMaster.length > 0) {
-                        if (JSON.stringify(remoteMaster) !== JSON.stringify(masterData)) {
-                            setMasterData(remoteMaster);
-                            saveStoredData(remoteMaster);
+    const performDataSync = async () => {
+        if (!settings.autoSync || !navigator.onLine) return;
 
-                            const now = getTrueDate();
-                            const syncRef = `${now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} ${now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}`;
-                            handleSettingsUpdate({ ...settings, lastSyncTime: syncRef });
-                        }
+        try {
+            // Fetch Locations
+            const locRes = await fetch(REMOTE_DATA_URL);
+            if (locRes.ok) {
+                const remoteMaster: LocationData[] = await locRes.json();
+                if (Array.isArray(remoteMaster) && remoteMaster.length > 0) {
+                    // Only update if data changed
+                    if (JSON.stringify(remoteMaster) !== JSON.stringify(masterData)) {
+                        setMasterData(remoteMaster);
+                        saveStoredData(remoteMaster);
+
+                        // Update Sync Time
+                        const now = getTrueDate();
+                        const syncRef = `${now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} ${now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}`;
+                        // We use a functional state update for settings to avoid dependency loops if we put settings in dependency array of this function
+                        setSettings(prev => {
+                            const newSettings = { ...prev, lastSyncTime: syncRef };
+                            saveSettings(newSettings);
+                            return newSettings;
+                        });
                     }
-                })
-                .catch(err => console.log('Auto Sync failed (Locations):', err));
+                }
+            }
 
             // Fetch Notes
-            fetch(REMOTE_NOTES_URL)
-                .then(res => res.ok ? res.json() : null)
-                .then((remoteNotes: Note[]) => {
-                    if (Array.isArray(remoteNotes)) {
-                        if (JSON.stringify(remoteNotes) !== JSON.stringify(notesData)) {
-                            setNotesData(remoteNotes);
-                            saveStoredNotes(remoteNotes);
-                        }
+            const noteRes = await fetch(REMOTE_NOTES_URL);
+            if (noteRes.ok) {
+                const remoteNotes: Note[] = await noteRes.json();
+                if (Array.isArray(remoteNotes)) {
+                    // Only update if data changed
+                    if (JSON.stringify(remoteNotes) !== JSON.stringify(notesData)) {
+                        setNotesData(remoteNotes);
+                        saveStoredNotes(remoteNotes);
                     }
-                })
-                .catch(err => console.log('Auto Sync failed (Notes):', err));
+                }
+            }
+        } catch (err) {
+            console.log('Background Sync failed:', err);
+        }
+    };
+
+    // Initial Sync + Reconnect Sync
+    useEffect(() => {
+        if (settings.autoSync && isOnline) {
+            performDataSync();
         }
     }, [settings.autoSync, isOnline]);
+
+    // Periodic Background Sync (Every 1 Minute)
+    useEffect(() => {
+        if (!settings.autoSync) return;
+
+        const syncInterval = setInterval(() => {
+            if (navigator.onLine) {
+                performDataSync();
+            }
+        }, 1 * 60 * 1000); // 1 Minute
+
+        return () => clearInterval(syncInterval);
+    }, [settings.autoSync]);
 
     useEffect(() => {
         if (location.pathname === ADMIN_ROUTE) setIsLocalAdminOpen(true);
@@ -314,10 +379,10 @@ const MainApp = () => {
                                 <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl shadow-sm mb-4 text-center animate-pulse-slow">
                                     <div className="flex items-center justify-center gap-2 mb-1 text-emerald-800">
                                         <i className="fas fa-bullhorn text-xs"></i>
-                                        <h3 className="font-bold text-xs uppercase tracking-wider">Announcement</h3>
+                                        <h3 className="font-bold text-xs uppercase tracking-wider">{settings.language === 'ur' ? 'اعلان' : 'Announcement'}</h3>
                                     </div>
-                                    <p className="text-sm text-emerald-700 font-medium whitespace-pre-line leading-relaxed">
-                                        {activeMessage}
+                                    <p className={`text-sm text-emerald-700 font-medium whitespace-pre-line leading-relaxed ${settings.language === 'ur' ? 'font-urdu' : ''}`}>
+                                        {activeMessage[settings.language] || activeMessage.en || activeMessage.ur}
                                     </p>
                                 </div>
                             )}
@@ -329,7 +394,9 @@ const MainApp = () => {
                                         {visibleNotes.map(note => (
                                             <li key={note.id} className="flex gap-3 text-sm text-gray-700 bg-white p-3 rounded-xl shadow-sm border border-gray-100 items-start">
                                                 <i className={`fas fa-circle text-[6px] mt-2 flex-shrink-0 ${note.isGlobal ? 'text-gray-300' : 'text-emerald-500'}`}></i>
-                                                <span className="leading-relaxed font-medium">{note.text}</span>
+                                                <span className={`leading-relaxed font-medium ${settings.language === 'ur' ? 'font-urdu' : ''}`}>
+                                                    {note.text[settings.language] || note.text.en || note.text.ur}
+                                                </span>
                                             </li>
                                         ))}
                                     </ul>

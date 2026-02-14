@@ -16,13 +16,13 @@ export interface LocationData {
   name_ur: string;
   timings: RamadanTiming[];
   whatsapp_number?: string;
-  custom_message?: string;
+  custom_message?: { en: string; ur: string };
   whatsapp_community?: string;
 }
 
 export interface Note {
   id: string;
-  text: string;
+  text: { en: string; ur: string };
   isGlobal: boolean;
   locationId?: string; // Required if isGlobal is false
 }
