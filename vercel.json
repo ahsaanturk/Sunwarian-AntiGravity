@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/api/locations", "destination": "/api/locations" },
+    { "source": "/api/notes", "destination": "/api/notes" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

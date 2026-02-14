@@ -1,0 +1,369 @@
+import React, { useState } from 'react';
+import { LocationData, Translation, RamadanTiming, Note } from '../types';
+import { REMOTE_DATA_URL, REMOTE_NOTES_URL } from '../constants';
+
+interface GlobalAdminPanelProps {
+  data: LocationData[];
+  onUpdate: (newData: LocationData[]) => void;
+  notes: Note[];
+  onUpdateNotes: (newNotes: Note[]) => void;
+  translation: Translation;
+  onClose: () => void;
+}
+
+const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, notes, onUpdateNotes, translation, onClose }) => {
+  const [password, setPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [editingLocId, setEditingLocId] = useState<string | null>(null);
+  
+  // Location Fields
+  const [locNameEn, setLocNameEn] = useState('');
+  const [locNameUr, setLocNameUr] = useState('');
+  const [locWhatsapp, setLocWhatsapp] = useState('');
+  const [locCommunity, setLocCommunity] = useState('');
+  const [locMessage, setLocMessage] = useState('');
+  const [timingsJson, setTimingsJson] = useState('');
+  
+  // Note Input Fields
+  const [newGlobalNote, setNewGlobalNote] = useState('');
+  const [newLocationNote, setNewLocationNote] = useState('');
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleLogin = () => {
+    if (password === 'AhsaanGlobal786') setIsAuthenticated(true);
+    else alert(translation.adminErrorAuth);
+  };
+
+  // --- LOCATION LOGIC ---
+
+  const startAddLocation = () => {
+    setEditingLocId('new');
+    setLocNameEn('');
+    setLocNameUr('');
+    setLocWhatsapp('');
+    setLocCommunity('');
+    setLocMessage('');
+    setTimingsJson('[]');
+  };
+
+  const startEditLocation = (loc: LocationData) => {
+    setEditingLocId(loc.id);
+    setLocNameEn(loc.name_en);
+    setLocNameUr(loc.name_ur);
+    setLocWhatsapp(loc.whatsapp_number || '');
+    setLocCommunity(loc.whatsapp_community || '');
+    setLocMessage(loc.custom_message || '');
+    setTimingsJson(JSON.stringify(loc.timings, null, 2));
+  };
+
+  const saveLocation = () => {
+    try {
+      const parsedTimings: RamadanTiming[] = JSON.parse(timingsJson);
+      let newData: LocationData[];
+      let locId = editingLocId === 'new' ? locNameEn.toLowerCase().replace(/\s+/g, '-') : editingLocId!;
+
+      const locDataPartial = {
+        name_en: locNameEn,
+        name_ur: locNameUr,
+        timings: parsedTimings,
+        whatsapp_number: locWhatsapp,
+        whatsapp_community: locCommunity,
+        custom_message: locMessage
+      };
+
+      if (editingLocId === 'new') {
+        const newLoc: LocationData = {
+          id: locId,
+          ...locDataPartial
+        };
+        newData = [...data, newLoc];
+      } else {
+        newData = data.map(l => l.id === editingLocId ? { ...l, ...locDataPartial } : l);
+      }
+      
+      onUpdate(newData);
+      setEditingLocId(null);
+    } catch (e) {
+      alert("Invalid Timings JSON");
+    }
+  };
+
+  const deleteLocation = (id: string) => {
+    if (window.confirm("Delete this location?")) {
+        onUpdate(data.filter(l => l.id !== id));
+        // Also remove associated notes
+        onUpdateNotes(notes.filter(n => n.locationId !== id));
+    }
+  };
+
+  // --- NOTE LOGIC ---
+
+  const addGlobalNote = () => {
+    if (!newGlobalNote.trim()) return;
+    const note: Note = {
+        id: `note_${Date.now()}`,
+        text: newGlobalNote,
+        isGlobal: true
+    };
+    onUpdateNotes([...notes, note]);
+    setNewGlobalNote('');
+  };
+
+  const addLocationNote = () => {
+    if (!newLocationNote.trim() || !editingLocId) return;
+    const locId = editingLocId === 'new' ? 'temp_id_replace_later' : editingLocId;
+    const note: Note = {
+        id: `note_${Date.now()}`,
+        text: newLocationNote,
+        isGlobal: false,
+        locationId: locId
+    };
+    onUpdateNotes([...notes, note]);
+    setNewLocationNote('');
+  };
+
+  const deleteNote = (id: string) => {
+    if(window.confirm("Delete this note?")) {
+        onUpdateNotes(notes.filter(n => n.id !== id));
+    }
+  };
+
+  // --- SYNC LOGIC ---
+
+  const downloadMaster = () => {
+    const fullExport = {
+        locations: data,
+        notes: notes
+    };
+    const blob = new Blob([JSON.stringify(fullExport, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "master_full.json";
+    a.click();
+  };
+
+  const pushToCloud = async () => {
+    if(!window.confirm("This will overwrite the database in MongoDB. Continue?")) return;
+    
+    setIsSaving(true);
+    try {
+        // Sync Locations
+        const locResponse = await fetch(REMOTE_DATA_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: password, data: data })
+        });
+        const locResult = await locResponse.json();
+
+        // Sync Notes
+        const noteResponse = await fetch(REMOTE_NOTES_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: password, data: notes })
+        });
+        const noteResult = await noteResponse.json();
+        
+        if (locResponse.ok && noteResponse.ok && locResult.success && noteResult.success) {
+            alert("✅ Successfully synced Locations & Notes with MongoDB!");
+        } else {
+            alert(`❌ Sync Failed. Loc: ${locResult.message || locResult.error}, Note: ${noteResult.message || noteResult.error}`);
+        }
+    } catch (error) {
+        alert("❌ Network Error: Is the server running?");
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="fixed inset-0 bg-slate-900 flex items-center justify-center z-[100]">
+        <div className="bg-white p-6 rounded-2xl w-80 shadow-2xl">
+          <div className="text-center mb-6">
+             <i className="fas fa-database text-4xl text-green-600 mb-2"></i>
+             <h2 className="text-xl font-bold text-slate-800">{translation.globalAdminTitle}</h2>
+             <p className="text-xs text-gray-500">Real Admin Access</p>
+          </div>
+          <input
+            type="password"
+            placeholder={translation.password}
+            className="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:ring-2 focus:ring-green-500 outline-none"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div className="flex space-x-2">
+            <button onClick={onClose} className="flex-1 bg-gray-200 py-2 rounded-lg font-bold">{translation.cancel}</button>
+            <button onClick={handleLogin} className="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold hover:bg-green-700">{translation.login}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Filter notes for the currently edited location
+  const currentLocationNotes = notes.filter(n => n.locationId === editingLocId);
+  const globalNotes = notes.filter(n => n.isGlobal);
+
+  return (
+    <div className="fixed inset-0 bg-slate-100 z-[100] overflow-y-auto font-sans p-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm">
+            <div>
+                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i className="fas fa-database text-green-600"></i> {translation.globalAdminTitle}
+                </h2>
+                <p className="text-xs text-gray-400">Connected to: namaz_timing</p>
+            </div>
+            <div className="flex gap-2">
+                <button 
+                    onClick={pushToCloud} 
+                    disabled={isSaving}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 text-white shadow-md transition-all ${isSaving ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
+                >
+                    {isSaving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-cloud-upload-alt"></i>}
+                    Save to Cloud
+                </button>
+                <button onClick={downloadMaster} className="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-xs font-bold"><i className="fas fa-download mr-1"></i> JSON</button>
+                <button onClick={onClose} className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold">{translation.close}</button>
+            </div>
+        </div>
+
+        {editingLocId ? (
+            <div className="bg-white p-6 rounded-xl shadow-sm space-y-4">
+                <h3 className="font-bold text-lg text-gray-800 border-b pb-2">
+                    {editingLocId === 'new' ? 'Create Location' : `Edit: ${locNameEn}`}
+                </h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 block mb-1">Name (EN)</label>
+                        <input value={locNameEn} onChange={e => setLocNameEn(e.target.value)} className="w-full border p-3 rounded-xl focus:ring-2 ring-blue-500" />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 block mb-1">Name (UR)</label>
+                        <input value={locNameUr} onChange={e => setLocNameUr(e.target.value)} className="w-full border p-3 rounded-xl focus:ring-2 ring-blue-500 font-urdu" dir="rtl" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 block mb-1">WhatsApp Number (Optional)</label>
+                        <input 
+                            value={locWhatsapp} 
+                            onChange={e => setLocWhatsapp(e.target.value)} 
+                            placeholder="e.g., 923191490380"
+                            className="w-full border p-3 rounded-xl focus:ring-2 ring-blue-500" 
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 block mb-1">WhatsApp Community (Optional)</label>
+                        <input 
+                            value={locCommunity} 
+                            onChange={e => setLocCommunity(e.target.value)} 
+                            placeholder="e.g., https://whatsapp.com/channel/..."
+                            className="w-full border p-3 rounded-xl focus:ring-2 ring-blue-500 text-xs" 
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 block mb-1">Custom Home Screen Announcement</label>
+                        <textarea 
+                            value={locMessage} 
+                            onChange={e => setLocMessage(e.target.value)} 
+                            placeholder="Pinned announcement message..."
+                            className="w-full h-32 border p-3 rounded-xl focus:ring-2 ring-blue-500" 
+                        />
+                    </div>
+                    
+                    {/* Location Specific Notes */}
+                    <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                        <label className="text-xs font-bold text-indigo-800 block mb-2">Location Notes (Added to list)</label>
+                        <div className="flex gap-2 mb-2">
+                            <input 
+                                value={newLocationNote}
+                                onChange={e => setNewLocationNote(e.target.value)}
+                                className="flex-1 text-xs p-2 rounded-lg border border-indigo-200"
+                                placeholder="Add note specific to this location..."
+                            />
+                            <button onClick={addLocationNote} className="bg-indigo-600 text-white px-3 rounded-lg text-xs"><i className="fas fa-plus"></i></button>
+                        </div>
+                        <div className="space-y-2 max-h-24 overflow-y-auto">
+                            {currentLocationNotes.map(note => (
+                                <div key={note.id} className="bg-white p-2 rounded-lg text-xs flex justify-between items-center shadow-sm">
+                                    <span>{note.text}</span>
+                                    <button onClick={() => deleteNote(note.id)} className="text-red-400 hover:text-red-600"><i className="fas fa-times"></i></button>
+                                </div>
+                            ))}
+                            {currentLocationNotes.length === 0 && <p className="text-xs text-indigo-300 italic">No notes yet.</p>}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="text-xs font-bold text-gray-400 block mb-1">Timings JSON</label>
+                    <textarea value={timingsJson} onChange={e => setTimingsJson(e.target.value)} className="w-full h-64 font-mono text-[10px] p-4 bg-slate-50 border rounded-xl" />
+                </div>
+                
+                <div className="flex gap-2 mt-4">
+                    <button onClick={() => setEditingLocId(null)} className="flex-1 bg-gray-100 py-3 rounded-xl font-bold">{translation.cancel}</button>
+                    <button onClick={saveLocation} className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">{translation.save}</button>
+                </div>
+            </div>
+        ) : (
+            <>
+                {/* Global Notes Section */}
+                <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-indigo-500 mb-6">
+                    <h3 className="font-bold text-indigo-800 mb-2">Global Notes (Visible to All)</h3>
+                    <div className="flex gap-2 mb-4">
+                        <input 
+                            value={newGlobalNote} 
+                            onChange={e => setNewGlobalNote(e.target.value)}
+                            className="flex-1 border p-2 rounded-lg text-sm"
+                            placeholder="Enter a note that will appear for ALL locations..."
+                        />
+                        <button onClick={addGlobalNote} className="bg-indigo-600 text-white px-4 rounded-lg font-bold"><i className="fas fa-plus"></i> Add</button>
+                    </div>
+                    <div className="space-y-2">
+                        {globalNotes.map(note => (
+                            <div key={note.id} className="flex justify-between items-center bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                                <span className="text-sm text-indigo-900">{note.text}</span>
+                                <button onClick={() => deleteNote(note.id)} className="text-red-500 bg-white w-6 h-6 rounded-full shadow-sm hover:bg-red-50"><i className="fas fa-times"></i></button>
+                            </div>
+                        ))}
+                        {globalNotes.length === 0 && <p className="text-sm text-gray-400 italic">No global notes added.</p>}
+                    </div>
+                </div>
+
+                {/* Locations Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {data.map(loc => (
+                        <div key={loc.id} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border border-gray-100">
+                            <div>
+                                <h3 className="font-bold text-gray-800">{loc.name_en}</h3>
+                                <p className="text-xs text-gray-400">{loc.timings.length} Days</p>
+                                {loc.custom_message && <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[9px] rounded-md mr-1">Announcement</span>}
+                                {notes.some(n => n.locationId === loc.id) && <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] rounded-md">Notes</span>}
+                            </div>
+                            <div className="flex gap-2">
+                                <button onClick={() => startEditLocation(loc)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><i className="fas fa-edit"></i></button>
+                                <button onClick={() => deleteLocation(loc.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><i className="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    ))}
+                    <button onClick={startAddLocation} className="border-2 border-dashed border-gray-300 p-6 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all bg-white/50">
+                        <i className="fas fa-plus text-2xl mb-2"></i>
+                        <span className="font-bold">{translation.addLocation}</span>
+                    </button>
+                </div>
+            </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default GlobalAdminPanel;
