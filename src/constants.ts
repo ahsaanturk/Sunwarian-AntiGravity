@@ -22,7 +22,8 @@ export const DEFAULT_SETTINGS = {
   selectedLocationId: 'sunwarian',
   autoSync: true,
   sehriAlertOffset: 60, // 1 hour default
-  iftarAlertOffset: 20  // 20 min default
+  iftarAlertOffset: 20, // 20 min default
+  wakeLockEnabled: false
 };
 
 export const INITIAL_RAMADAN_DATA: RamadanTiming[] = [
@@ -180,7 +181,11 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     requestLocationBtn: "Request New Location",
     requestLocationTitle: "Request Location",
     requestLocationDesc: "Ask App Team to add your location.",
-    sayOnWhatsapp: "Say on WhatsApp"
+    sayOnWhatsapp: "Say on WhatsApp",
+
+    // PWA Features
+    installAppBtn: "Install App",
+    keepScreenOn: "Keep Screen Awake"
   },
   ur: {
     title: "سنواریاں رمضان",
@@ -261,6 +266,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     requestLocationBtn: "نیا علاقہ شامل کروائیں",
     requestLocationTitle: "علاقہ شامل کرنے کی درخواست",
     requestLocationDesc: "ایپ ٹیم سے اپنا علاقہ شامل کرنے کی درخواست کریں۔",
-    sayOnWhatsapp: "واٹس ایپ پر کہیں"
+    sayOnWhatsapp: "واٹس ایپ پر کہیں",
+
+    // PWA Features
+    installAppBtn: "ایپ انسٹال کریں",
+    keepScreenOn: "اسکرین آن رکھیں"
   }
 };

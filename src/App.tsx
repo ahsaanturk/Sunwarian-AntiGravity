@@ -145,6 +145,75 @@ const MainApp = () => {
         else if (location.pathname === GLOBAL_ADMIN_ROUTE) setIsGlobalAdminOpen(true);
     }, [location]);
 
+    // PWA Install Prompt State
+    const [installPrompt, setInstallPrompt] = useState<any>(null);
+    const [isWakeLockActive, setIsWakeLockActive] = useState(false);
+    const wakeLockRef = React.useRef<any>(null);
+
+    useEffect(() => {
+        // Handle PWA Install Prompt
+        const handleBeforeInstallPrompt = (e: any) => {
+            e.preventDefault();
+            setInstallPrompt(e);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        // Handle Wake Lock
+        const requestWakeLock = async () => {
+            if (settings.wakeLockEnabled && 'wakeLock' in navigator) {
+                try {
+                    wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+                    setIsWakeLockActive(true);
+                    wakeLockRef.current.addEventListener('release', () => {
+                        setIsWakeLockActive(false);
+                    });
+                } catch (err) {
+                    console.log('Wake Lock failed:', err);
+                }
+            }
+        };
+
+        const releaseWakeLock = async () => {
+            if (wakeLockRef.current) {
+                await wakeLockRef.current.release();
+                wakeLockRef.current = null;
+                setIsWakeLockActive(false);
+            }
+        };
+
+        // Handle visibility change (re-request wake lock if tab becomes visible)
+        const handleVisibilityChange = async () => {
+            if (settings.wakeLockEnabled && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        };
+
+        if (settings.wakeLockEnabled) {
+            requestWakeLock();
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        } else {
+            releaseWakeLock();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        }
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            releaseWakeLock();
+        };
+    }, [settings.wakeLockEnabled]);
+
+    const handleInstallClick = () => {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        installPrompt.userChoice.then((choiceResult: any) => {
+            if (choiceResult.outcome === 'accepted') {
+                setInstallPrompt(null);
+            }
+        });
+    };
+
     const toggleLanguage = () => {
         const newLang: Language = settings.language === 'en' ? 'ur' : 'en';
         const newSettings = { ...settings, language: newLang };
@@ -283,6 +352,41 @@ const MainApp = () => {
                                         {settings.language === 'ur' ? activeLocation.name_ur : activeLocation.name_en}
                                     </span>
                                     <i className="fas fa-chevron-down text-gray-400 group-hover:text-emerald-500"></i>
+                                </div>
+                            </div>
+
+                            {/* PWA: Install App Button (Only visible if prompt available) */}
+                            {installPrompt && (
+                                <button
+                                    onClick={handleInstallClick}
+                                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-5 rounded-2xl shadow-lg shadow-emerald-200 flex justify-between items-center transform transition-transform active:scale-[0.98]"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl backdrop-blur-sm">
+                                            <i className="fas fa-download"></i>
+                                        </div>
+                                        <span className={`font-bold text-lg ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>{t.installAppBtn}</span>
+                                    </div>
+                                    <i className="fas fa-chevron-right text-emerald-100"></i>
+                                </button>
+                            )}
+
+                            {/* PWA: Wake Lock Toggle */}
+                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-colors ${settings.wakeLockEnabled ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400'}`}>
+                                        <i className="fas fa-sun"></i>
+                                    </div>
+                                    <div>
+                                        <p className={`font-bold text-gray-800 text-lg ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>{t.keepScreenOn}</p>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className={`w-12 h-7 rounded-full relative cursor-pointer transition-colors ${settings.wakeLockEnabled ? 'bg-amber-500' : 'bg-gray-300'}`}
+                                    onClick={() => handleSettingsUpdate({ ...settings, wakeLockEnabled: !settings.wakeLockEnabled })}
+                                >
+                                    <div className={`absolute top-1 left-1 bg-white w-5 h-5 rounded-full transition-transform shadow-sm ${settings.wakeLockEnabled ? 'translate-x-5' : ''}`}></div>
                                 </div>
                             </div>
 

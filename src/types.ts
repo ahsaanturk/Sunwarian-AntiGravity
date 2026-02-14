@@ -37,6 +37,7 @@ export interface AppSettings {
   lastSyncTime?: string;
   sehriAlertOffset: number; // minutes, 0 = off
   iftarAlertOffset: number; // minutes, 0 = off
+  wakeLockEnabled: boolean;
 }
 
 export interface Translation {
@@ -128,4 +129,8 @@ export interface Translation {
   requestLocationTitle: string;
   requestLocationDesc: string;
   sayOnWhatsapp: string;
+
+  // PWA Features
+  installAppBtn: string;
+  keepScreenOn: string;
 }
