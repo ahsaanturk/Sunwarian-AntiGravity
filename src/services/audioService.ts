@@ -62,26 +62,12 @@ async function decodeRawPCM(
   return buffer;
 }
 
-export const playDuaAudio = async (text: string, id: string) => {
+export const prefetchAudio = async (text: string, id: string): Promise<boolean> => {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
     const cached = await getCachedAudio(id);
+    if (cached) return true;
 
-    if (cached) {
-      // Use manual PCM decoding for cached data
-      const audioData = new Uint8Array(cached);
-      const buffer = await decodeRawPCM(audioData, audioContext, 24000, 1);
-      const source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContext.destination);
-      source.start();
-      return true;
-    }
-
-    if (!navigator.onLine) {
-       console.warn("Offline and audio not cached.");
-       return false;
-    }
+    if (!navigator.onLine) return false;
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
@@ -91,7 +77,7 @@ export const playDuaAudio = async (text: string, id: string) => {
         responseModalities: [Modality.AUDIO],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Fenrir' }, 
+            prebuiltVoiceConfig: { voiceName: 'Fenrir' },
           },
         },
       },
@@ -100,17 +86,33 @@ export const playDuaAudio = async (text: string, id: string) => {
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     if (base64Audio) {
       const audioData = decodeBase64(base64Audio);
-      
-      // Cache the raw PCM bytes
       await cacheAudio(id, audioData.buffer);
-
-      // Decode and play
-      const buffer = await decodeRawPCM(audioData, audioContext, 24000, 1);
-      const source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContext.destination);
-      source.start();
       return true;
+    }
+  } catch (error) {
+    console.error("Audio prefetch error:", error);
+  }
+  return false;
+};
+
+export const playDuaAudio = async (text: string, id: string) => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+
+    // Ensure audio is cached (prefetch will just return true if already cached)
+    const isReady = await prefetchAudio(text, id);
+
+    if (isReady) {
+      const cached = await getCachedAudio(id);
+      if (cached) {
+        const audioData = new Uint8Array(cached);
+        const buffer = await decodeRawPCM(audioData, audioContext, 24000, 1);
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start();
+        return true;
+      }
     }
   } catch (error) {
     console.error("Audio playback error:", error);

@@ -62,7 +62,7 @@ app.get('/api/locations', async (req, res) => {
   }
 });
 
-// POST: Update location data (Admin Only)
+// POST: Update location data (Admin Only) - Optimized with BulkWrite
 app.post('/api/locations', async (req, res) => {
   const { password, data } = req.body;
 
@@ -75,14 +75,20 @@ app.post('/api/locations', async (req, res) => {
   }
 
   try {
-    for (const loc of data) {
-      await LocationModel.findOneAndUpdate(
-        { id: loc.id },
-        loc,
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
+    // Prepare bulk operations
+    const operations = data.map(loc => ({
+      updateOne: {
+        filter: { id: loc.id },
+        update: { $set: loc },
+        upsert: true
+      }
+    }));
+
+    if (operations.length > 0) {
+      await LocationModel.bulkWrite(operations);
     }
-    console.log("✅ Data synced to MongoDB by Admin");
+
+    console.log(`✅ Synced ${data.length} locations to MongoDB (BulkWrite)`);
     res.json({ success: true, message: "Data saved to MongoDB" });
   } catch (e) {
     console.error("Save Error:", e);
@@ -102,7 +108,7 @@ app.get('/api/notes', async (req, res) => {
   }
 });
 
-// POST: Sync notes (Replace All)
+// POST: Sync notes - Optimized (Delete Missing + Bulk Upsert)
 app.post('/api/notes', async (req, res) => {
   const { password, data } = req.body;
 
@@ -115,11 +121,24 @@ app.post('/api/notes', async (req, res) => {
   }
 
   try {
-    // Delete all existing and replace with new list to ensure consistency
-    await NoteModel.deleteMany({});
-    await NoteModel.insertMany(data);
+    // 1. Delete notes that are NOT in the incoming data (Cleanup)
+    const incomingIds = data.map(n => n.id);
+    await NoteModel.deleteMany({ id: { $nin: incomingIds } });
 
-    console.log("✅ Notes synced to MongoDB by Admin");
+    // 2. Bulk Upsert the incoming notes
+    const operations = data.map(note => ({
+      updateOne: {
+        filter: { id: note.id },
+        update: { $set: note },
+        upsert: true
+      }
+    }));
+
+    if (operations.length > 0) {
+      await NoteModel.bulkWrite(operations);
+    }
+
+    console.log(`✅ Synced ${data.length} notes to MongoDB`);
     res.json({ success: true, message: "Notes synced to MongoDB" });
   } catch (e) {
     console.error("Notes Save Error:", e);

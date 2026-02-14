@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { TRANSLATIONS, INITIAL_MASTER_DATA, ADMIN_ROUTE, GLOBAL_ADMIN_ROUTE, REMOTE_DATA_URL, REMOTE_NOTES_URL, WHATSAPP_NUMBER, DEFAULT_WHATSAPP_COMMUNITY } from './constants';
+import { TRANSLATIONS, INITIAL_MASTER_DATA, ADMIN_ROUTE, GLOBAL_ADMIN_ROUTE, REMOTE_DATA_URL, REMOTE_NOTES_URL, WHATSAPP_NUMBER, DEFAULT_WHATSAPP_COMMUNITY, DUAS } from './constants';
 import { getStoredData, saveStoredData, getSettings, saveSettings, getStoredNotes, saveStoredNotes } from './services/storageService';
 import { RamadanTiming, Language, AppSettings, LocationData, Note } from './types';
 import { requestNotificationPermission, playAlarm } from './services/notificationService';
+import { prefetchAudio } from './services/audioService';
 import { syncTimeWithNetwork, getTrueDate, isTimeSynced } from './services/timeService';
 
 // Components
@@ -65,9 +66,14 @@ const MainApp = () => {
     const activeMessage = activeLocation.custom_message;
     const activeCommunity = activeLocation.whatsapp_community || DEFAULT_WHATSAPP_COMMUNITY;
 
-    // Filter Notes: Global OR Matches Current Location
+    // Filter Notes: Global OR Matches Current Location (Sorted: Local first)
     const visibleNotes = useMemo(() => {
-        return notesData.filter(note => note.isGlobal || note.locationId === settings.selectedLocationId);
+        return notesData
+            .filter(note => note.isGlobal || note.locationId === settings.selectedLocationId)
+            .sort((a, b) => {
+                if (a.isGlobal === b.isGlobal) return 0;
+                return a.isGlobal ? 1 : -1;
+            });
     }, [notesData, settings.selectedLocationId]);
 
     const performTimeSync = async () => {
@@ -93,6 +99,10 @@ const MainApp = () => {
 
         if (navigator.onLine) {
             performTimeSync();
+
+            // Prefetch Dua Audio for Offline Use
+            prefetchAudio(DUAS.sehri.arabic, 'sehri_dua');
+            prefetchAudio(DUAS.iftar.arabic, 'iftar_dua');
         }
 
         const clockTimer = setInterval(() => {
@@ -299,33 +309,30 @@ const MainApp = () => {
                                 </div>
                             </div>
 
-                            {/* NOTES SECTION (Global + Location) */}
-                            {visibleNotes.length > 0 && (
-                                <div className="mb-4 space-y-3">
-                                    {visibleNotes.map(note => (
-                                        <div key={note.id} className="bg-indigo-50 border-l-4 border-indigo-400 p-4 rounded-r-xl shadow-sm animate-pulse-slow">
-                                            <div className="flex items-center gap-2 mb-1 text-indigo-800">
-                                                <i className="fas fa-sticky-note text-sm"></i>
-                                                <span className="font-bold text-xs uppercase tracking-wider">{note.isGlobal ? 'Global Note' : 'Note'}</span>
-                                            </div>
-                                            <p className="text-sm text-indigo-700 font-medium whitespace-pre-line leading-relaxed">
-                                                {note.text}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Custom Announcement Message from Admin */}
+                            {/* Custom Announcement Message from Admin (TOP PRIORITY) */}
                             {activeMessage && (
-                                <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl shadow-sm mb-6 text-center animate-pulse-slow">
-                                    <div className="flex items-center justify-center gap-2 mb-2 text-emerald-800">
-                                        <i className="fas fa-bullhorn text-sm"></i>
-                                        <h3 className="font-bold text-sm uppercase tracking-wider">Announcement</h3>
+                                <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl shadow-sm mb-4 text-center animate-pulse-slow">
+                                    <div className="flex items-center justify-center gap-2 mb-1 text-emerald-800">
+                                        <i className="fas fa-bullhorn text-xs"></i>
+                                        <h3 className="font-bold text-xs uppercase tracking-wider">Announcement</h3>
                                     </div>
                                     <p className="text-sm text-emerald-700 font-medium whitespace-pre-line leading-relaxed">
                                         {activeMessage}
                                     </p>
+                                </div>
+                            )}
+
+                            {/* NOTES SECTION (Global + Location) - Compact Story Points */}
+                            {visibleNotes.length > 0 && (
+                                <div className="mb-6 px-2">
+                                    <ul className="space-y-2">
+                                        {visibleNotes.map(note => (
+                                            <li key={note.id} className="flex gap-3 text-sm text-gray-700 bg-white p-3 rounded-xl shadow-sm border border-gray-100 items-start">
+                                                <i className={`fas fa-circle text-[6px] mt-2 flex-shrink-0 ${note.isGlobal ? 'text-gray-300' : 'text-emerald-500'}`}></i>
+                                                <span className="leading-relaxed font-medium">{note.text}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             )}
                         </>

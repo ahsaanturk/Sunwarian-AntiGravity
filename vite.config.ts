@@ -5,6 +5,15 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, (process as any).cwd(), '');
   return {
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
     plugins: [
       react(),
       VitePWA({
