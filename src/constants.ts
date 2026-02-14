@@ -103,7 +103,7 @@ export const ASHRA_DUAS = {
 
 export const TRANSLATIONS: Record<Language, Translation> = {
   en: {
-    title: "Sunwarian Ramadan",
+    title: "Rozadaar App",
     sehri: "Sehri Ends",
     iftar: "Iftar Time",
     next: "Next Event",
@@ -188,7 +188,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     keepScreenOn: "Keep Screen Awake"
   },
   ur: {
-    title: "سنواریاں رمضان",
+    title: "روزہ دار ایپ",
     sehri: "ختم سحری",
     iftar: "وقت افطار",
     next: "اگلا وقت",

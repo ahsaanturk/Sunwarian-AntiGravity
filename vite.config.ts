@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
-          name: 'Sunwarian Ramadan Timing',
-          short_name: 'Ramadan Time',
+          name: 'Rozadaar App - Ramadan Timing',
+          short_name: 'Rozadaar',
           description: 'Ramadan Timings for Sunwarian, Azad Kashmir',
           theme_color: '#047857',
           icons: [
