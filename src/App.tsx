@@ -671,22 +671,42 @@ const MainApp = () => {
 
                         <p className="text-gray-600 mb-6 text-sm">{t.installModalDesc}</p>
 
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                <i className="fas fa-share-square text-blue-500 text-2xl"></i>
-                                <div>
-                                    <p className="font-bold text-gray-800 text-sm">{t.installModalStep1}</p>
-                                    <p className="text-xs text-gray-500">{t.iosShareIcon}</p>
+                        {/* Check if iOS (iPhone/iPad/iPod) */}
+                        {/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream ? (
+                            // iOS Specific Instructions
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <i className="fas fa-share-square text-blue-500 text-2xl"></i>
+                                    <div>
+                                        <p className="font-bold text-gray-800 text-sm">{t.installModalStep1}</p>
+                                        <p className="text-xs text-gray-500">{t.iosShareIcon}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <i className="fas fa-plus-square text-gray-700 text-2xl"></i>
+                                    <div>
+                                        <p className="font-bold text-gray-800 text-sm">{t.installModalStep2}</p>
+                                        <p className="text-xs text-gray-500">{t.iosAddIcon}</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                <i className="fas fa-plus-square text-gray-700 text-2xl"></i>
-                                <div>
-                                    <p className="font-bold text-gray-800 text-sm">{t.installModalStep2}</p>
-                                    <p className="text-xs text-gray-500">{t.iosAddIcon}</p>
+                        ) : (
+                            // Generic / Android / Desktop Instructions
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <i className="fas fa-ellipsis-v text-gray-700 text-2xl px-2"></i>
+                                    <div>
+                                        <p className="font-bold text-gray-800 text-sm">{t.genericInstallStep1}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                    <i className="fas fa-download text-emerald-600 text-2xl"></i>
+                                    <div>
+                                        <p className="font-bold text-gray-800 text-sm">{t.genericInstallStep2}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="mt-6 text-center">
                             <button

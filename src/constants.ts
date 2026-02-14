@@ -191,7 +191,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     installModalStep1: "Tap the Share button",
     installModalStep2: "Scroll down and tap 'Add to Home Screen'",
     iosShareIcon: "Share",
-    iosAddIcon: "Add to Home Screen"
+    iosAddIcon: "Add to Home Screen",
+    genericInstallDesc: "To install this app:",
+    genericInstallStep1: "Open Browser Menu (⋮ or ⋯)",
+    genericInstallStep2: "Tap 'Install App' or 'Add to Home Screen'"
   },
   ur: {
     title: "روزہ دار ایپ",
@@ -282,6 +285,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     installModalStep1: "شیئر بٹن دبائیں",
     installModalStep2: "'Add to Home Screen' منتخب کریں",
     iosShareIcon: "شیئر",
-    iosAddIcon: "Add to Home Screen"
+    iosAddIcon: "Add to Home Screen",
+    genericInstallDesc: "ایپ انسٹال کرنے کا طریقہ:",
+    genericInstallStep1: "براؤزر مینو کھولیں (⋮ یا ⋯)",
+    genericInstallStep2: "'Install App' یا 'Add to Home Screen' منتخب کریں"
   }
 };

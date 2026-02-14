@@ -139,4 +139,7 @@ export interface Translation {
   installModalStep2: string;
   iosShareIcon: string;
   iosAddIcon: string;
+  genericInstallDesc: string;
+  genericInstallStep1: string;
+  genericInstallStep2: string;
 }
