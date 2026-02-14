@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 // reuse connection between function invocations
 let cachedDb = null;
 
-const MONGO_URI = "mongodb+srv://nehmatullah:1122@learn.usn1zoo.mongodb.net/namaz_timing?retryWrites=true&w=majority";
+const MONGO_URI = process.env.MONGO_URI;
 
 const NoteSchema = new mongoose.Schema({
   id: { type: String, unique: true },
-  text: String,
+  text: { en: String, ur: String },
   isGlobal: Boolean,
   locationId: String
 });
@@ -19,7 +19,7 @@ async function connectToDatabase() {
   if (cachedDb) {
     return cachedDb;
   }
-  
+
   const opts = {
     bufferCommands: false,
   };
@@ -30,9 +30,10 @@ async function connectToDatabase() {
 }
 
 export default async function handler(req, res) {
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,PUT,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
   if (req.method === 'OPTIONS') {
@@ -46,8 +47,8 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const notes = await NoteModel.find({}, '-_id -__v');
       return res.status(200).json(notes);
-    } 
-    
+    }
+
     else if (req.method === 'POST') {
       const { password, data } = req.body;
 
@@ -59,13 +60,26 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Invalid data format" });
       }
 
-      // Replace strategy: Delete all and insert new list to ensure deletions propagate
-      await NoteModel.deleteMany({});
-      await NoteModel.insertMany(data);
+      // 1. Delete notes that are NOT in the incoming data (Cleanup)
+      const incomingIds = data.map(n => n.id);
+      await NoteModel.deleteMany({ id: { $nin: incomingIds } });
+
+      // 2. Bulk Upsert the incoming notes
+      const operations = data.map(note => ({
+        updateOne: {
+          filter: { id: note.id },
+          update: { $set: note },
+          upsert: true
+        }
+      }));
+
+      if (operations.length > 0) {
+        await NoteModel.bulkWrite(operations);
+      }
 
       return res.status(200).json({ success: true, message: "Notes synced to MongoDB" });
-    } 
-    
+    }
+
     else {
       return res.status(405).json({ error: "Method not allowed" });
     }

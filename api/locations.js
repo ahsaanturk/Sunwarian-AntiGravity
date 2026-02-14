@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 // reuse connection between function invocations
 let cachedDb = null;
 
-const MONGO_URI = "mongodb+srv://nehmatullah:1122@learn.usn1zoo.mongodb.net/namaz_timing?retryWrites=true&w=majority";
+const MONGO_URI = process.env.MONGO_URI;
 
 const TimingSchema = new mongoose.Schema({
   id: Number,
@@ -21,7 +21,7 @@ const LocationSchema = new mongoose.Schema({
   name_ur: String,
   timings: [TimingSchema],
   whatsapp_number: String,
-  custom_message: String,
+  custom_message: { en: String, ur: String },
   whatsapp_community: String
 });
 
@@ -32,10 +32,9 @@ async function connectToDatabase() {
   if (cachedDb) {
     return cachedDb;
   }
-  
-  // Set connection options for serverless environment
+
   const opts = {
-    bufferCommands: false, // Disable mongoose buffering
+    bufferCommands: false,
   };
 
   const db = await mongoose.connect(MONGO_URI, opts);
@@ -44,10 +43,10 @@ async function connectToDatabase() {
 }
 
 export default async function handler(req, res) {
-  // Add CORS headers for good measure (though Vercel handles same-origin)
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,PUT,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
   if (req.method === 'OPTIONS') {
@@ -61,8 +60,8 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const data = await LocationModel.find({}, '-_id -__v -timings._id');
       return res.status(200).json(data);
-    } 
-    
+    }
+
     else if (req.method === 'POST') {
       const { password, data } = req.body;
 
@@ -74,17 +73,22 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Invalid data format" });
       }
 
-      for (const loc of data) {
-        await LocationModel.findOneAndUpdate(
-          { id: loc.id }, 
-          loc, 
-          { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
+      // Bulk Write Operation
+      const operations = data.map(loc => ({
+        updateOne: {
+          filter: { id: loc.id },
+          update: { $set: loc },
+          upsert: true
+        }
+      }));
+
+      if (operations.length > 0) {
+        await LocationModel.bulkWrite(operations);
       }
 
-      return res.status(200).json({ success: true, message: "Data saved to MongoDB" });
-    } 
-    
+      return res.status(200).json({ success: true, message: "Data saved to MongoDB (BulkWrite)" });
+    }
+
     else {
       return res.status(405).json({ error: "Method not allowed" });
     }
