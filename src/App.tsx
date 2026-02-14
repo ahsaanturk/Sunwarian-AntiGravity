@@ -210,7 +210,7 @@ const MainApp = () => {
             if (navigator.onLine) {
                 performDataSync();
             }
-        }, 1 * 60 * 1000); // 1 Minute
+        }, 1000); // 1 Second
 
         return () => clearInterval(syncInterval);
     }, [settings.autoSync]);
