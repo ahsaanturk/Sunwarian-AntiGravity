@@ -3,6 +3,7 @@ import { RamadanTiming, Translation, AppSettings } from '../types';
 import { sendNotification, playAlarm } from '../services/notificationService';
 import { getTrueDate } from '../services/timeService';
 import { formatTo12h } from '../App';
+import { toUrduNumber } from '../utils';
 
 interface CountdownProps {
   timings: RamadanTiming[];
@@ -168,9 +169,13 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
       {/* Hijri Info Overlay */}
       {activeTiming && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20 text-emerald-100/90 text-[10px] bg-emerald-700/30 px-4 py-1 rounded-full backdrop-blur-sm border border-white/10">
-          <span>Ramadan {activeTiming.hijri_date}</span>
+          <span>
+            {settings.language === 'ur'
+              ? `رمضان ${toUrduNumber(activeTiming.hijri_date)}`
+              : `Ramadan ${activeTiming.hijri_date}`}
+          </span>
           <span>•</span>
-          <span>{activeTiming.day_ur}</span>
+          <span>{settings.language === 'ur' ? activeTiming.day_ur : activeTiming.day_en}</span>
         </div>
       )}
 

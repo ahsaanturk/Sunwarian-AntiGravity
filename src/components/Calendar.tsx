@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { RamadanTiming, Translation, Language } from '../types';
 import { ASHRA_DUAS } from '../constants';
 import { formatTo12h } from '../App';
+import { toUrduNumber } from '../utils';
 
 interface CalendarProps {
   data: RamadanTiming[];
@@ -72,7 +73,12 @@ const Calendar: React.FC<CalendarProps> = ({ data, translation, language }) => {
                   )}
                   <div className="flex flex-col">
                     <span className={`font-bold text-base ${isToday ? 'text-emerald-800' : 'text-gray-800'}`}>
-                      {row.hijri_date} <span className="text-[10px] font-normal text-gray-500">Ramadan</span>
+                      {language === 'ur'
+                        ? `${toUrduNumber(row.hijri_date)}`
+                        : row.hijri_date}
+                      <span className="text-[10px] font-normal text-gray-500 mx-1">
+                        {language === 'ur' ? 'رمضان' : 'Ramadan'}
+                      </span>
                     </span>
                     <span className="text-gray-400 text-xs">
                       {language === 'ur' ? row.day_ur : row.day_en}
@@ -92,7 +98,7 @@ const Calendar: React.FC<CalendarProps> = ({ data, translation, language }) => {
           })}
         </tbody>
       </table>
-    </div>
+    </div >
   );
 
   const ashra1 = data.filter(d => d.hijri_date <= 10);
