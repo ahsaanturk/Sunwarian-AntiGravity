@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { AppSettings, LocationData, Translation } from '../types';
 
 interface HeaderProps {
@@ -20,6 +21,9 @@ const Header: React.FC<HeaderProps> = ({
     onToggleLanguage,
     translation: t
 }) => {
+    const location = useLocation();
+    const isSettingsPage = location.pathname === '/settings';
+
     return (
         <div className="bg-emerald-700 pb-20 pt-8 px-6 rounded-b-[2.5rem] shadow-lg text-white relative z-10">
             <div className="flex justify-between items-start">
@@ -28,9 +32,11 @@ const Header: React.FC<HeaderProps> = ({
                         <MoonIcon />
                         <span className={settings.language === 'ur' ? 'font-urdu-heading pt-1' : ''}>{t.title}</span>
                     </h1>
-                    <div className="flex flex-col mt-1 opacity-90">
-                        <p className="text-[10px] text-emerald-200 flex items-center gap-1">
-                            <i className="fas fa-map-marker-alt"></i> {settings.language === 'ur' ? activeLocation.name_ur : activeLocation.name_en}
+                    <div className="flex flex-col mt-2 opacity-90">
+                        {/* Location Name - Highlighting & Increased Size */}
+                        <p className={`text-sm font-semibold text-emerald-100 flex items-center gap-1.5 mb-1 ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>
+                            <i className="fas fa-map-marker-alt text-xs"></i>
+                            {settings.language === 'ur' ? activeLocation.name_ur : activeLocation.name_en}
                         </p>
 
                         {/* Date Display */}
@@ -61,8 +67,9 @@ const Header: React.FC<HeaderProps> = ({
                             </span>
                         </div>
 
-                        {settings.lastSyncTime && (
-                            <p className="text-[9px] text-emerald-300 font-mono mt-0.5">
+                        {/* Ref Time - ONLY on Settings Page */}
+                        {isSettingsPage && settings.lastSyncTime && (
+                            <p className="text-[9px] text-emerald-300 font-mono mt-1 pt-1 border-t border-emerald-600/30 inline-block">
                                 {t.refLabel} {settings.lastSyncTime}
                             </p>
                         )}
