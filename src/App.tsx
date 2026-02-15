@@ -511,7 +511,7 @@ const MainApp = () => {
                             </div>
 
                             {/* WhatsApp Support Button */}
-                            <a href={`https://wa.me/${activeWhatsApp}`} target="_blank" rel="noopener noreferrer" className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center text-gray-700">
+                            <a href={`https://wa.me/${activeWhatsApp}?text=${encodeURIComponent(t.supportPreFilledMsg)}`} target="_blank" rel="noopener noreferrer" className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center text-gray-700">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl"><i className="fab fa-whatsapp"></i></div>
                                     <span className={`font-bold text-lg ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>{t.whatsappSupport}</span>

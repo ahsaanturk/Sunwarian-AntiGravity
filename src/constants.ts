@@ -215,7 +215,11 @@ export const TRANSLATIONS: Record<Language, Translation> = {
 
     // User Guide
     userGuideBtn: "User Guide",
-    userGuideTitle: "App User Guide"
+    userGuideTitle: "App User Guide",
+
+    // WhatsApp Messages
+    supportPreFilledMsg: "Aslam O Alaikum, I want to know something",
+    requestLocationMsg: "Aslam O Alaikum, Request to add my location, my location is not present in locations."
   },
   ur: {
     title: "روزہ دار ایپ",
@@ -330,7 +334,11 @@ export const TRANSLATIONS: Record<Language, Translation> = {
 
     // User Guide
     userGuideBtn: "استعمال کا طریقہ",
-    userGuideTitle: "ایپ گائیڈ"
+    userGuideTitle: "ایپ گائیڈ",
+
+    // WhatsApp Messages
+    supportPreFilledMsg: "السلام و علیکم، میں کچھ پوچھنا چاہتا ہوں",
+    requestLocationMsg: "اسلام علیکم، میں اپنے علاقے کا اضافہ کروانا چاہتا ہوں، میرا علاقہ لسٹ میں موجود نہیں ہے۔"
   }
 };
 

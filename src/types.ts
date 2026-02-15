@@ -162,4 +162,8 @@ export interface Translation {
   installIosStep1: string;
   installIosStep2: string;
   installIosStep3: string;
+
+  // WhatsApp Messages
+  supportPreFilledMsg: string;
+  requestLocationMsg: string;
 }

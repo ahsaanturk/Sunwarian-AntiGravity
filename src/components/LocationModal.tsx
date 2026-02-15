@@ -88,7 +88,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
                             </p>
 
                             <a
-                                href="https://wa.me/923191490380"
+                                href={`https://wa.me/923191490380?text=${encodeURIComponent(t.requestLocationMsg)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="bg-[#25D366] text-white font-bold py-3.5 px-6 rounded-xl w-full flex items-center justify-center gap-3 hover:bg-[#20bd5a] transition-colors shadow-lg shadow-green-200"
