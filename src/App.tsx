@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { TRANSLATIONS, INITIAL_MASTER_DATA, ADMIN_ROUTE, GLOBAL_ADMIN_ROUTE, REMOTE_DATA_URL, REMOTE_NOTES_URL, WHATSAPP_NUMBER, DEFAULT_WHATSAPP_COMMUNITY, DUAS } from './constants';
+import { TRANSLATIONS, INITIAL_MASTER_DATA, ADMIN_ROUTE, GLOBAL_ADMIN_ROUTE, REMOTE_DATA_URL, REMOTE_NOTES_URL, WHATSAPP_NUMBER, DEFAULT_WHATSAPP_COMMUNITY, DUAS, DEFAULT_USER_GUIDE } from './constants';
 import { getStoredData, saveStoredData, getSettings, saveSettings, getStoredNotes, saveStoredNotes } from './services/storageService';
 import { RamadanTiming, Language, AppSettings, LocationData, Note } from './types';
 import { requestNotificationPermission, playAlarm } from './services/notificationService';
@@ -42,6 +42,7 @@ const App = () => {
 const MainApp = () => {
     const [masterData, setMasterData] = useState<LocationData[]>(INITIAL_MASTER_DATA);
     const [notesData, setNotesData] = useState<Note[]>([]);
+    const [userGuide, setUserGuide] = useState<string>(''); // Current User Guide Text
     const [settings, setSettings] = useState<AppSettings>(getSettings());
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isLocalAdminOpen, setIsLocalAdminOpen] = useState(false);
@@ -52,6 +53,7 @@ const MainApp = () => {
     // Modal States
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+    const [isUserGuideOpen, setIsUserGuideOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
     const t = TRANSLATIONS[settings.language];
@@ -83,6 +85,15 @@ const MainApp = () => {
             setTimeIsVerified(true);
         }
     };
+
+    // Extract User Guide from Notes
+    useEffect(() => {
+        const guideNote = notesData.find(n => n.type === 'guide');
+        const guideText = guideNote
+            ? (guideNote.text[settings.language] || guideNote.text.en || guideNote.text.ur)
+            : DEFAULT_USER_GUIDE[settings.language];
+        setUserGuide(guideText);
+    }, [notesData, settings.language]);
 
     const checkConnectivity = async () => {
         try {
@@ -152,7 +163,8 @@ const MainApp = () => {
     }, []);
 
     const performDataSync = async () => {
-        if (!settings.autoSync || !navigator.onLine) return;
+        // Validation: Don't sync if offline, disabled, OR ADMIN IS OPEN (Active Editing)
+        if (!settings.autoSync || !navigator.onLine || isLocalAdminOpen || isGlobalAdminOpen) return;
 
         try {
             // Fetch Locations
@@ -202,7 +214,7 @@ const MainApp = () => {
         }
     }, [settings.autoSync, isOnline]);
 
-    // Periodic Background Sync (Every 1 Minute)
+    // Periodic Background Sync (Every 1 Second)
     useEffect(() => {
         if (!settings.autoSync) return;
 
@@ -210,10 +222,10 @@ const MainApp = () => {
             if (navigator.onLine) {
                 performDataSync();
             }
-        }, 1000); // 1 Second
+        }, 1000); // 1 Second Refresh
 
         return () => clearInterval(syncInterval);
-    }, [settings.autoSync]);
+    }, [settings.autoSync, performDataSync]); // Added performDataSync to fix stale closure
 
     useEffect(() => {
         if (location.pathname === ADMIN_ROUTE) setIsLocalAdminOpen(true);
@@ -511,6 +523,20 @@ const MainApp = () => {
                                 <i className="fas fa-external-link-alt text-gray-300 text-xs"></i>
                             </a>
 
+                            {/* User Guide Button */}
+                            <div
+                                onClick={() => setIsUserGuideOpen(true)}
+                                className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer active:bg-gray-50 transition-colors"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl">
+                                        <i className="fas fa-book-open"></i>
+                                    </div>
+                                    <span className={`font-bold text-lg ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>{t.userGuideBtn}</span>
+                                </div>
+                                <i className="fas fa-chevron-right text-gray-300"></i>
+                            </div>
+
                             {/* PWA: Install App Button (Visible if NOT standalone) */}
                             {!isStandalone && (
                                 <button
@@ -682,7 +708,7 @@ const MainApp = () => {
                                 <i className="fas fa-times-circle text-2xl"></i>
                             </button>
                         </div>
-
+                        {/* ... existing install modal content ... */}
                         <div className="space-y-3">
                             {/* Option 1: Android */}
                             <div className={`border rounded-xl transition-all ${expandedInstallOption === 'android' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 bg-white'}`}>
@@ -788,6 +814,41 @@ const MainApp = () => {
                             <button
                                 onClick={() => setIsInstallModalOpen(false)}
                                 className="text-emerald-600 font-bold text-sm"
+                            >
+                                {t.close}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User Guide Modal */}
+            {isUserGuideOpen && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-6">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsUserGuideOpen(false)}></div>
+                    <div className="relative bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg">
+                                    <i className="fas fa-book-open"></i>
+                                </div>
+                                <h3 className={`text-xl font-bold text-gray-800 ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>
+                                    {t.userGuideTitle}
+                                </h3>
+                            </div>
+                            <button onClick={() => setIsUserGuideOpen(false)} className="text-gray-400 hover:text-red-500">
+                                <i className="fas fa-times-circle text-2xl"></i>
+                            </button>
+                        </div>
+
+                        <div className={`prose prose-sm max-w-none text-gray-700 whitespace-pre-line leading-relaxed ${settings.language === 'ur' ? 'font-urdu text-right' : ''}`}>
+                            {userGuide}
+                        </div>
+
+                        <div className="mt-6 text-center pt-4 border-t border-gray-100">
+                            <button
+                                onClick={() => setIsUserGuideOpen(false)}
+                                className="bg-indigo-50 text-indigo-600 px-6 py-2 rounded-full font-bold text-sm hover:bg-indigo-100 transition-colors"
                             >
                                 {t.close}
                             </button>

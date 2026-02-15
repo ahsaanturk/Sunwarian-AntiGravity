@@ -25,6 +25,7 @@ export interface Note {
   text: { en: string; ur: string };
   isGlobal: boolean;
   locationId?: string; // Required if isGlobal is false
+  type?: 'note' | 'guide';
 }
 
 export type Language = 'en' | 'ur';
@@ -51,6 +52,8 @@ export interface Translation {
   enableNotifications: string;
   testAlarm: string;
   language: string;
+  userGuideBtn: string;
+  userGuideTitle: string;
   installGuide: string;
   adminLogin: string;
   password: string;

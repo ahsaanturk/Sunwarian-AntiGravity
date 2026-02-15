@@ -31,12 +31,25 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
   const [newLocationNoteEn, setNewLocationNoteEn] = useState('');
   const [newLocationNoteUr, setNewLocationNoteUr] = useState('');
 
+  // User Guide Fields
+  const [guideEn, setGuideEn] = useState('');
+  const [guideUr, setGuideUr] = useState('');
+
   const [isSaving, setIsSaving] = useState(false);
 
   const handleLogin = () => {
     if (password === 'AhsaanGlobal786') setIsAuthenticated(true);
     else alert(translation.adminErrorAuth);
   };
+
+  // Load User Guide on Init
+  React.useEffect(() => {
+    const guide = notes.find(n => n.type === 'guide');
+    if (guide) {
+      setGuideEn(guide.text.en);
+      setGuideUr(guide.text.ur);
+    }
+  }, [notes]);
 
   // --- LOCATION LOGIC ---
 
@@ -136,6 +149,21 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
     }
   };
 
+  const saveUserGuide = () => {
+    const existingGuide = notes.find(n => n.type === 'guide');
+    const newGuideNote: Note = {
+      id: existingGuide ? existingGuide.id : `guide_${Date.now()}`,
+      text: { en: guideEn, ur: guideUr },
+      isGlobal: true,
+      type: 'guide'
+    };
+
+    // Remove old guide if exists, add new one
+    const otherNotes = notes.filter(n => n.type !== 'guide');
+    onUpdateNotes([...otherNotes, newGuideNote]);
+    alert("User Guide Updated locally! Click 'Save to Cloud' to push changes.");
+  };
+
   // --- SYNC LOGIC ---
 
   const downloadMaster = () => {
@@ -209,9 +237,9 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
     );
   }
 
-  // Filter notes for the currently edited location
+  // Filter notes
   const currentLocationNotes = notes.filter(n => n.locationId === editingLocId);
-  const globalNotes = notes.filter(n => n.isGlobal);
+  const globalNotes = notes.filter(n => n.isGlobal && n.type !== 'guide'); // Exclude guide from generic notes
 
   return (
     <div className="fixed inset-0 bg-slate-100 z-[100] overflow-y-auto font-sans p-4">
@@ -340,6 +368,30 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
           </div>
         ) : (
           <>
+            {/* User Guide Editor Section */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-500 mb-6">
+              <h3 className="font-bold text-amber-800 mb-2 flex items-center gap-2">
+                <i className="fas fa-book-open"></i> App User Guide (Settings Menu)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                <textarea
+                  value={guideEn}
+                  onChange={e => setGuideEn(e.target.value)}
+                  placeholder="User Guide (English)..."
+                  className="w-full h-24 border p-3 rounded-lg text-sm focus:ring-2 ring-amber-500"
+                />
+                <textarea
+                  value={guideUr}
+                  onChange={e => setGuideUr(e.target.value)}
+                  placeholder="User Guide (Urdu)..."
+                  className="w-full h-24 border p-3 rounded-lg text-sm focus:ring-2 ring-amber-500 font-urdu" dir="rtl"
+                />
+              </div>
+              <button onClick={saveUserGuide} className="bg-amber-100 text-amber-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-200 w-full md:w-auto">
+                Update User Guide Text
+              </button>
+            </div>
+
             {/* Global Notes Section */}
             <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-indigo-500 mb-6">
               <h3 className="font-bold text-indigo-800 mb-2">Global Notes (Visible to All)</h3>

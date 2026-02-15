@@ -72,32 +72,32 @@ export const DUAS = {
   sehri: {
     title: { en: "Sehri Dua", ur: "دعا برائے سحری" },
     arabic: "وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ",
-    urdu: "اور میں نے ماہ رمضان کے کل کے روزے کی نیت کی",
+    urdu: "میں کل کے رمضان کے روزے کی نیت کرتا ہوں۔",
     english: "I intend to keep the fast for tomorrow in the month of Ramadan"
   },
   iftar: {
     title: { en: "Iftar Dua", ur: "دعا برائے افطار" },
     arabic: "اللَّهُمَّ اِنِّى لَكَ صُمْتُ وَبِكَ امَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلَى رِزْقِكَ اَفْطَرْتُ",
-    urdu: "اے اللہ! میں نے تیرے لیے روزہ رکھا اور تجھ پر ایمان لایا اور تیرے ہی دیے ہوئے رزق سے افطار کیا",
-    english: "O Allah! I fasted for You and I believe in You and I put my trust in You and I break my fast with Your sustenance"
+    urdu: "اے اللہ! میں نے تیرے لیے روزہ رکھا، اور تجھ پر ایمان لایا اور تجھ پر ہی بھروسہ کیا، اور تیرے دیے ہوئے رزق سے افطار کیا۔",
+    english: "O Allah! I fasted for You, I believe in You, I rely on You, and with Your sustenance, I break my fast."
   }
 };
 
 export const ASHRA_DUAS = {
   first: {
-    arabic: "رَبِّ اغْفِرْ وَارْحَمْ وَأَنْتَ خَيْرُ الرَّاحِمِينَ",
+    arabic: "رَبِّ اغْفِرْ وَارْحَمْ وَأَنْتَ خَيْرُ الرَّاحِمِينَ",
     urdu: "اے میرے رب! مجھے بخش دے اور مجھ پر رحم فرما، تو سب سے بہتر رحم کرنے والا ہے۔",
-    english: "O My Lord! Forgive and have mercy, for You are the Best of those who show mercy."
+    english: "O! My Lord forgive and have Mercy and You are the Best of Merciful."
   },
   second: {
-    arabic: "أَسْتَغْفِرُ اللَّهَ رَبِّي مِنْ كُلِّ ذَنْبٍ وَأَتُوبُ إِلَيْهِ",
+    arabic: "أَسْتَغْفِرُ اللهَ رَبِّي مِنْ كُلِّ ذَنْبٍ وَأَتُوبُ إِلَيْهِ",
     urdu: "میں اللہ سے اپنے تمام گناہوں کی بخشش مانگتا ہوں جو میرا رب ہے اور اسی کی طرف رجوع کرتا ہوں",
-    english: "I seek forgiveness from Allah, my Lord, from every sin, and I turn to Him in repentance."
+    english: "“I seek forgiveness from Allah, my Lord, from every sin I committed.”"
   },
   third: {
     arabic: "اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ",
     urdu: "اے اللہ! مجھے آگ کے عذاب سے بچا",
-    english: "O Allah! Save me from the fire of Hell."
+    english: "“O Allah! Save me from the Hell – Fire.”"
   }
 };
 
@@ -211,7 +211,11 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     installIosDesc: "Install on iOS Devices",
     installIosStep1: "Tap 'Share' Button",
     installIosStep2: "Scroll down",
-    installIosStep3: "Tap 'Add to Home Screen'"
+    installIosStep3: "Tap 'Add to Home Screen'",
+
+    // User Guide
+    userGuideBtn: "User Guide",
+    userGuideTitle: "App User Guide"
   },
   ur: {
     title: "روزہ دار ایپ",
@@ -322,6 +326,15 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     installIosDesc: "آئی فون پر انسٹال کریں",
     installIosStep1: "'Share' بٹن دبائیں",
     installIosStep2: "نیچے سکرول کریں",
-    installIosStep3: "'Add to Home Screen' دبائیں"
+    installIosStep3: "'Add to Home Screen' دبائیں",
+
+    // User Guide
+    userGuideBtn: "استعمال کا طریقہ",
+    userGuideTitle: "ایپ گائیڈ"
   }
+};
+
+export const DEFAULT_USER_GUIDE = {
+  en: "Welcome to Rozadaar App!\n\n1. Select your location from Settings.\n2. Enable notifications to get Sehri/Iftar alerts.\n3. Use the Install App button to add to your home screen.\n4. Join our WhatsApp Community for updates.",
+  ur: "روزہ دار ایپ میں خوش آمدید!\n\n1. سیٹنگز سے اپنا علاقہ منتخب کریں۔\n2. سحری اور افطار کے لیے نوٹیفکیشن آن کریں۔\n3. ایپ انسٹال کرنے کے لیے انسٹال بٹن استعمال کریں۔\n4. اپ ڈیٹس کے لیے ہماری واٹس ایپ کمیونٹی جوائن کریں۔"
 };

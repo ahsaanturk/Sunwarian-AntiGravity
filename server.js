@@ -42,7 +42,8 @@ const NoteSchema = new mongoose.Schema({
   id: { type: String, unique: true },
   text: { en: String, ur: String },
   isGlobal: Boolean,
-  locationId: String
+  locationId: String,
+  type: { type: String, default: 'note' } // 'note' or 'guide'
 });
 
 const LocationModel = mongoose.model('Location', LocationSchema);
