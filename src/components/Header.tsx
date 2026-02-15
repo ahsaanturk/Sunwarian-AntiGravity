@@ -63,7 +63,10 @@ const Header: React.FC<HeaderProps> = ({
                                 })}
                             </p>
                             <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase ${timeIsVerified ? 'bg-emerald-500/30 text-emerald-100' : 'bg-yellow-500/30 text-yellow-100'}`}>
-                                {timeIsVerified ? 'Network' : 'Device'}
+                                {timeIsVerified
+                                    ? (settings.language === 'ur' ? 'درست' : 'Accurate')
+                                    : (settings.language === 'ur' ? 'ناقص' : 'Device')
+                                }
                             </span>
                         </div>
 

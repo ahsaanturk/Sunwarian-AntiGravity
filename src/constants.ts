@@ -12,14 +12,14 @@ export const REMOTE_NOTES_URL = "/api/notes";
 export const WHATSAPP_NUMBER = "923191490380";
 export const DEFAULT_WHATSAPP_COMMUNITY = "https://whatsapp.com/channel/0029VbBlHMN5Ejy4nOt2gZ1P";
 
-export const STORAGE_KEY_DATA = "sunwarian_ramadan_master_v1";
-export const STORAGE_KEY_NOTES = "sunwarian_notes_v1";
-export const STORAGE_KEY_SETTINGS = "sunwarian_settings_v5";
+export const STORAGE_KEY_DATA = "rozadaar_ramadan_master_v1";
+export const STORAGE_KEY_NOTES = "rozadaar_notes_v1";
+export const STORAGE_KEY_SETTINGS = "rozadaar_settings_v5";
 
 export const DEFAULT_SETTINGS = {
   notificationsEnabled: true,
   language: 'ur' as Language,
-  selectedLocationId: 'sunwarian',
+  selectedLocationId: 'rozadaar-default',
   autoSync: true,
   sehriAlertOffset: 60, // 1 hour default
   iftarAlertOffset: 20, // 20 min default
@@ -61,8 +61,8 @@ export const INITIAL_RAMADAN_DATA: RamadanTiming[] = [
 
 export const INITIAL_MASTER_DATA: LocationData[] = [
   {
-    id: "sunwarian",
-    name_en: "Sunwarian, AJK",
+    id: "rozadaar-default",
+    name_en: "Rozadaar App Default",
     name_ur: "سنواریاں، آزاد کشمیر",
     timings: INITIAL_RAMADAN_DATA
   }

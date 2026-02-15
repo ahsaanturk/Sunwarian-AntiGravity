@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { RamadanTiming, Translation, AppSettings } from '../types';
 import { sendNotification, playAlarm } from '../services/notificationService';
-import { getTrueDate } from '../services/timeService';
+import { getTrueDate, getLocalDateString } from '../services/timeService';
 import { formatTo12h } from '../App';
 import { toUrduNumber } from '../utils';
 
@@ -23,7 +23,7 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
   useEffect(() => {
     const calculateTime = () => {
       const now = getTrueDate();
-      const todayStr = now.toISOString().split('T')[0];
+      const todayStr = getLocalDateString();
 
       const todayTiming = timings.find(t => t.date === todayStr);
       let targetDate: Date | null = null;

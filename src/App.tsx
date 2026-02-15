@@ -5,7 +5,7 @@ import { getStoredData, saveStoredData, getSettings, saveSettings, getStoredNote
 import { RamadanTiming, Language, AppSettings, LocationData, Note } from './types';
 import { requestNotificationPermission, playAlarm } from './services/notificationService';
 import { prefetchAudio } from './services/audioService';
-import { syncTimeWithNetwork, getTrueDate, isTimeSynced } from './services/timeService';
+import { syncTimeWithNetwork, getTrueDate, isTimeSynced, getLocalDateString } from './services/timeService';
 
 // Components
 import Countdown from './components/Countdown';
@@ -370,12 +370,15 @@ const MainApp = () => {
         return masterData.filter(loc =>
             loc.name_en.toLowerCase().includes(lowerQuery) ||
             loc.name_ur.includes(lowerQuery) ||
-            loc.id.toLowerCase().includes(lowerQuery)
+            loc.id.toLowerCase().includes(lowerQuery) ||
+            (loc.nearby_areas && loc.nearby_areas.toLowerCase().includes(lowerQuery)) ||
+            (loc.custom_message?.en && loc.custom_message.en.toLowerCase().includes(lowerQuery)) ||
+            (loc.custom_message?.ur && loc.custom_message.ur.includes(lowerQuery))
         );
     }, [masterData, searchQuery]);
 
     // Derived state that updates every second with currentTime
-    const todayStr = currentTime.toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
     const todayData = activeTimings.find(d => d.date === todayStr);
 
     const alertOptions = [
@@ -436,6 +439,21 @@ const MainApp = () => {
                                 </div>
                             )}
 
+                            {/* Nearby Areas Disclaimer Note (Home Screen) */}
+                            {activeLocation.nearby_areas && (
+                                <div className="mb-4 px-2">
+                                    <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl shadow-sm text-center">
+                                        <p className={`text-xs text-amber-800 font-medium leading-relaxed ${settings.language === 'ur' ? 'font-urdu' : ''}`}>
+                                            <i className="fas fa-info-circle mr-1"></i>
+                                            {settings.language === 'ur'
+                                                ? `یہ کیلنڈر ان علاقوں کے لیے بھی موزوں ہے: ${activeLocation.nearby_areas}`
+                                                : `This Calendar is valid for: ${activeLocation.nearby_areas}`
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* NOTES SECTION (Global + Location) - Compact Story Points */}
                             {visibleNotes.length > 0 && (
                                 <div className="mb-6 px-2">
@@ -456,10 +474,21 @@ const MainApp = () => {
                     <Route path="/calendar" element={<Calendar data={activeTimings} translation={t} language={settings.language} />} />
                     <Route path="/settings" element={
                         <div className="space-y-4 mt-4">
-                            <div className="flex justify-end mb-2">
-                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold shadow-sm border transition-all ${isOnline ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-                                    <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                                    {isOnline ? t.online : t.offline}
+                            <div className="flex flex-col items-end mb-2">
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold shadow-sm border transition-all ${timeIsVerified ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
+                                    <span className={`w-2 h-2 rounded-full ${timeIsVerified ? 'bg-emerald-500 animate-pulse' : 'bg-yellow-500'}`}></span>
+                                    {timeIsVerified
+                                        ? (settings.language === 'ur' ? 'انٹرنیٹ سے درست وقت حاصل کیا جا رہا ہے' : 'Accurate time fetching from Internet')
+                                        : (settings.language === 'ur' ? 'آخری انٹرنیٹ رابطے کی بنیاد پر پیشین گوئی' : 'Predicted based on last internet fetch')
+                                    }
+                                    <div className="relative group ml-1">
+                                        <i className="fas fa-info-circle text-gray-400 cursor-pointer hover:text-emerald-500 transition-colors"></i>
+                                        <div className="absolute right-0 top-6 w-64 bg-gray-800 text-white text-[10px] p-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none">
+                                            <p className="mb-1 font-bold border-b border-gray-600 pb-1">Time Accuracy / وقت کی درستگی</p>
+                                            <p className="mb-1">We synchronize your clock with global internet time to ensure Sehar/Iftar accuracy, even if your device time is wrong.</p>
+                                            <p className="font-urdu text-right">ہم آپ کی گھڑی کو عالمی انٹرنیٹ وقت کے ساتھ ہم آہنگ کرتے ہیں تاکہ سحر و افطار کے اوقات درست رہیں، چاہے آپ کے موبائل کا وقت غلط ہو۔</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

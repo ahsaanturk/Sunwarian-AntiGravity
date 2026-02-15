@@ -1,11 +1,11 @@
 {
-  "name": "Sunwarian Ramadan",
-  "short_name": "Sunwarian",
+  "name": "Rozadaar App",
+  "short_name": "Rozadaar",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f0fdf4",
   "theme_color": "#059669",
-  "description": "Ramadan Timing for Sunwarian Village",
+  "description": "Ramadan Timing for Rozadaar App",
   "orientation": "portrait",
   "icons": [
     {

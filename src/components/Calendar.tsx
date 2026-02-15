@@ -3,6 +3,7 @@ import { RamadanTiming, Translation, Language } from '../types';
 import { ASHRA_DUAS } from '../constants';
 import { formatTo12h } from '../App';
 import { toUrduNumber } from '../utils';
+import { getLocalDateString } from '../services/timeService';
 
 interface CalendarProps {
   data: RamadanTiming[];
@@ -11,7 +12,7 @@ interface CalendarProps {
 }
 
 const Calendar: React.FC<CalendarProps> = ({ data, translation, language }) => {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString();
 
   useEffect(() => {
     // Auto-scroll to current day

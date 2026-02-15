@@ -1,4 +1,4 @@
-const STORAGE_KEY_TIME_OFFSET = 'sunwarian_time_offset';
+const STORAGE_KEY_TIME_OFFSET = 'rozadaar_time_offset';
 let isSyncedInSession = false;
 
 export interface TimeSyncResult {
@@ -29,12 +29,12 @@ export const syncTimeWithNetwork = async (): Promise<TimeSyncResult | null> => {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
-    
+
     // HEAD request to root or index.html
-    const response = await fetch('/', { 
-        method: 'HEAD', 
-        cache: 'no-store',
-        signal: controller.signal
+    const response = await fetch('/', {
+      method: 'HEAD',
+      cache: 'no-store',
+      signal: controller.signal
     });
     clearTimeout(timeoutId);
 
@@ -45,7 +45,7 @@ export const syncTimeWithNetwork = async (): Promise<TimeSyncResult | null> => {
       // HTTP Date header only has second precision.
       // We assume the server time represents the moment the request was processed.
       const offset = networkTime - endTime;
-      
+
       saveOffset(offset);
       isSyncedInSession = true;
       // console.log(`Verified Network Time (Header). Offset: ${offset}ms`);
@@ -54,7 +54,7 @@ export const syncTimeWithNetwork = async (): Promise<TimeSyncResult | null> => {
   } catch (e) {
     // Ignore and try next method
   }
-  
+
   const services = [
     // Corrected URL case for TimeAPI
     { url: 'https://timeapi.io/api/Time/current/zone?timeZone=UTC', key: 'dateTime' },
@@ -66,9 +66,9 @@ export const syncTimeWithNetwork = async (): Promise<TimeSyncResult | null> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
 
-      const response = await fetch(service.url, { 
-          cache: 'no-store',
-          signal: controller.signal
+      const response = await fetch(service.url, {
+        cache: 'no-store',
+        signal: controller.signal
       });
       clearTimeout(timeoutId);
 
@@ -76,16 +76,16 @@ export const syncTimeWithNetwork = async (): Promise<TimeSyncResult | null> => {
         const data = await response.json();
         const endTime = Date.now();
         const latency = (endTime - startTime) / 2;
-        
+
         let timeStr = data[service.key];
         // Ensure TimeAPI string is treated as UTC if it lacks 'Z'
         if (service.url.includes('timeapi.io') && !timeStr.endsWith('Z') && !timeStr.includes('+')) {
-            timeStr += 'Z';
+          timeStr += 'Z';
         }
 
         const networkTime = new Date(timeStr).getTime() + latency;
         const offset = networkTime - endTime;
-        
+
         saveOffset(offset);
         isSyncedInSession = true;
         // console.log(`Verified Network Time (${service.url}). Offset: ${offset}ms`);
@@ -106,4 +106,16 @@ export const syncTimeWithNetwork = async (): Promise<TimeSyncResult | null> => {
 export const getTrueDate = (): Date => {
   const offset = getStoredOffset();
   return new Date(Date.now() + offset);
+};
+
+/**
+ * Returns YYYY-MM-DD string based on the user's LOCAL time (not UTC).
+ * This fixes the issue where 'today' shows as 'yesterday' between 12 AM and 5 AM in PKT (GMT+5).
+ */
+export const getLocalDateString = (): string => {
+  const date = getTrueDate();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };

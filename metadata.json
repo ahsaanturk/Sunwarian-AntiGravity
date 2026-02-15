@@ -1,6 +1,6 @@
 {
-  "name": "Sunwarian Namaz Timing",
-  "description": "A focused Ramadan timing alert app for Sunwarian village, Azad Kashmir. Features offline support, Sehri/Iftar alarms, and a hidden admin panel.",
+  "name": "Rozadaar App",
+  "description": "A focused Ramadan timing alert app for Rozadaar App. Features offline support, Sehri/Iftar alarms, and a hidden admin panel.",
   "requestFramePermissions": [
     "microphone"
   ]

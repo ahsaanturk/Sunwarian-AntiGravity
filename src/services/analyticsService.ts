@@ -1,8 +1,8 @@
 import { AppSettings } from '../types';
 
 const API_TRACK_URL = '/api/analytics/track';
-const STORAGE_KEY_VISITOR_ID = 'sunwarian_visitor_id';
-const SESSION_KEY_TRACKED = 'sunwarian_session_tracked';
+const STORAGE_KEY_VISITOR_ID = 'rozadaar_visitor_id';
+const SESSION_KEY_TRACKED = 'rozadaar_session_tracked';
 
 export const getVisitorId = (): string => {
     let id = localStorage.getItem(STORAGE_KEY_VISITOR_ID);

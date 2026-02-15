@@ -18,6 +18,7 @@ export interface LocationData {
   whatsapp_number?: string;
   custom_message?: { en: string; ur: string };
   whatsapp_community?: string;
+  nearby_areas?: string; // Comma-separated list of nearby villages/areas
 }
 
 export interface Note {

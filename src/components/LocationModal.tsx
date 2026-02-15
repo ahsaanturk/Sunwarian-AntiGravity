@@ -52,7 +52,21 @@ const LocationModal: React.FC<LocationModalProps> = ({
                                 <div key={loc.id} onClick={() => onSelectLocation(loc.id)} className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] ${loc.id === settings.selectedLocationId ? 'bg-emerald-50/50 border-emerald-500 shadow-sm ring-1 ring-emerald-500' : 'bg-white border-gray-100 hover:border-emerald-200 hover:bg-gray-50'}`}>
                                     <div>
                                         <h3 className={`font-bold text-lg ${loc.id === settings.selectedLocationId ? 'text-emerald-800' : 'text-gray-800'}`}>{settings.language === 'ur' ? loc.name_ur : loc.name_en}</h3>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{loc.timings.length} Days</p>
+                                        {/* Show nearby areas match if searching and found there */}
+
+                                        {searchQuery && ((loc.custom_message?.en && loc.custom_message.en.toLowerCase().includes(searchQuery.toLowerCase())) || (loc.custom_message?.ur && loc.custom_message.ur.includes(searchQuery))) && (
+                                            <p className="text-xs text-blue-600 font-medium mt-0.5 truncate max-w-[200px]">
+                                                <i className="fas fa-bullhorn mr-1"></i> Matches: {loc.custom_message.en || loc.custom_message.ur}
+                                            </p>
+                                        )}
+                                        {/* Show Nearby Areas if available, otherwise show Day Count */}
+                                        {loc.nearby_areas ? (
+                                            <p className="text-[10px] text-emerald-600 font-bold mt-0.5 leading-snug">
+                                                <i className="fas fa-map-marker-alt mr-1"></i> {loc.nearby_areas}
+                                            </p>
+                                        ) : (
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{loc.timings.length} Days</p>
+                                        )}
                                     </div>
                                     {loc.id === settings.selectedLocationId ? <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-emerald-200 shadow-lg"><i className="fas fa-check"></i></div> : <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-300"><i className="fas fa-chevron-right text-xs"></i></div>}
                                 </div>

@@ -23,6 +23,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
   const [locNameUr, setLocNameUr] = useState('');
   const [locWhatsapp, setLocWhatsapp] = useState('');
   const [locCommunity, setLocCommunity] = useState('');
+  const [locNearbyAreas, setLocNearbyAreas] = useState('');
   const [locMessageEn, setLocMessageEn] = useState('');
   const [locMessageUr, setLocMessageUr] = useState('');
   const [timingsJson, setTimingsJson] = useState('');
@@ -61,6 +62,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
     setLocNameUr('');
     setLocWhatsapp('');
     setLocCommunity('');
+    setLocNearbyAreas('');
     setLocMessageEn('');
     setLocMessageUr('');
     setTimingsJson('[]');
@@ -72,6 +74,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
     setLocNameUr(loc.name_ur);
     setLocWhatsapp(loc.whatsapp_number || '');
     setLocCommunity(loc.whatsapp_community || '');
+    setLocNearbyAreas(loc.nearby_areas || '');
     setLocMessageEn(loc.custom_message?.en || '');
     setLocMessageUr(loc.custom_message?.ur || '');
     setTimingsJson(JSON.stringify(loc.timings, null, 2));
@@ -89,6 +92,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
         timings: parsedTimings,
         whatsapp_number: locWhatsapp,
         whatsapp_community: locCommunity,
+        nearby_areas: locNearbyAreas,
         custom_message: { en: locMessageEn, ur: locMessageUr }
       };
 
@@ -309,6 +313,18 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
                   </div>
                 </div>
 
+
+                <div>
+                  <label className="text-xs font-bold text-emerald-600 block mb-1">Nearby Areas / Villages (Description)</label>
+                  <textarea
+                    value={locNearbyAreas}
+                    onChange={e => setLocNearbyAreas(e.target.value)}
+                    placeholder="e.g. Channat, Ballan, Lakhi Jungle... (These areas follow this calendar)"
+                    className="w-full h-16 border p-3 rounded-xl focus:ring-2 ring-emerald-500 text-sm bg-emerald-50/30 border-emerald-100 resize-none"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">This text will be shown to users and is searchable.</p>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-gray-400 block mb-1">WhatsApp Number (Optional)</label>
@@ -480,7 +496,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
           </>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { DUAS, TRANSLATIONS } from '../constants';
 import { Language, RamadanTiming } from '../types';
 import { playDuaAudio } from '../services/audioService';
+import { getLocalDateString } from '../services/timeService';
 
 interface DuaSliderProps {
   language: Language;
@@ -19,7 +20,7 @@ const DuaSlider: React.FC<DuaSliderProps> = ({ language, timings, currentTime })
 
   // Logic to handle auto-scrolling to the relevant Dua based on time of day
   useEffect(() => {
-    const todayStr = currentTime.toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
     const todayTiming = timings.find(t => t.date === todayStr);
 
     let showIftar = false;
