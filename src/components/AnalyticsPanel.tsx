@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAnalytics, fetchUserDetail } from '../services/analyticsService';
+import { fetchAnalytics, fetchUserDetail, fetchUserList } from '../services/analyticsService';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface Stats {
@@ -74,6 +74,198 @@ const AnalyticsPanel: React.FC = () => {
         setSelectedUser(null);
     };
 
+    // --- Interactive List Logic ---
+    const [activeView, setActiveView] = useState<'dashboard' | 'list'>('dashboard');
+    const [listFilter, setListFilter] = useState<{ filter?: string, period?: string, title: string }>({ title: 'Users' });
+    const [userList, setUserList] = useState<any[]>([]);
+    const [listLoading, setListLoading] = useState(false);
+    const [listPage, setListPage] = useState(1);
+    const [listTotalPages, setListTotalPages] = useState(1);
+
+    const loadUserList = async (page = 1) => {
+        setListLoading(true);
+        try {
+            const data = await fetchUserList(page, 20, listFilter.filter, listFilter.period);
+            if (data.users) {
+                setUserList(data.users);
+                setListTotalPages(data.totalPages);
+                setListPage(data.page);
+            }
+        } catch (e) {
+            console.error("Failed to fetch user list", e);
+        } finally {
+            setListLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeView === 'list') {
+            loadUserList(1);
+        }
+    }, [activeView, listFilter]);
+
+    const handleCardClick = (filter: string | undefined, period: string | undefined, title: string) => {
+        setListFilter({ filter, period, title });
+        setActiveView('list');
+    };
+
+    if (activeView === 'list') {
+        return (
+            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 animate-fade-in">
+                {/* Header */}
+                <div className="bg-gray-50/50 p-6 border-b border-gray-100 flex justify-between items-center">
+                    <div>
+                        <button
+                            onClick={() => setActiveView('dashboard')}
+                            className="text-gray-500 hover:text-emerald-600 font-bold text-xs flex items-center gap-2 mb-1 transition-colors"
+                        >
+                            <i className="fas fa-arrow-left"></i> Back to Dashboard
+                        </button>
+                        <h2 className="text-xl font-bold text-gray-800">{listFilter.title}</h2>
+                    </div>
+                    <button onClick={() => loadUserList(listPage)} className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm">
+                        <i className={`fas fa-sync-alt text-xs ${listLoading ? 'animate-spin' : ''}`}></i>
+                    </button>
+                </div>
+
+                {/* List Content */}
+                <div className="p-0">
+                    {listLoading ? (
+                        <div className="p-12 text-center text-gray-400">
+                            <i className="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p className="text-xs">Loading users...</p>
+                        </div>
+                    ) : userList.length === 0 ? (
+                        <div className="p-12 text-center text-gray-400">
+                            <i className="fas fa-users-slash text-2xl mb-2"></i>
+                            <p className="text-xs">No users found for this criteria.</p>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="divide-y divide-gray-50">
+                                {userList.map((user: any) => (
+                                    <div
+                                        key={user.visitorId}
+                                        onClick={() => handleViewUser(user.visitorId)}
+                                        className="p-4 hover:bg-emerald-50/30 transition-colors cursor-pointer flex items-center justify-between group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${user.isInstalled ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
+                                                {user.platform === 'iOS' ? <i className="fab fa-apple"></i> :
+                                                    user.platform === 'Android' ? <i className="fab fa-android"></i> :
+                                                        <i className="fas fa-globe"></i>}
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-gray-700 font-mono">
+                                                    {user.visitorId.slice(0, 8)}...
+                                                    {user.isInstalled && <i className="fas fa-check-circle text-emerald-500 ml-1 text-[10px]" title="Installed"></i>}
+                                                </p>
+                                                <p className="text-[10px] text-gray-400">
+                                                    {new Date(user.lastSeen).toLocaleDateString()} • {new Date(user.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-right hidden sm:block">
+                                                <p className="text-[10px] font-bold text-gray-600">{user.visitCount} visits</p>
+                                                {user.locationId && <p className="text-[10px] text-gray-400 uppercase">{user.locationId}</p>}
+                                            </div>
+                                            <i className="fas fa-chevron-right text-gray-200 group-hover:text-emerald-400 transition-colors text-xs"></i>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Pagination */}
+                            {listTotalPages > 1 && (
+                                <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                    <button
+                                        disabled={listPage === 1}
+                                        onClick={() => loadUserList(listPage - 1)}
+                                        className="px-3 py-1 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 disabled:opacity-50 hover:bg-gray-50"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="text-[10px] font-bold text-gray-400">Page {listPage} of {listTotalPages}</span>
+                                    <button
+                                        disabled={listPage === listTotalPages}
+                                        onClick={() => loadUserList(listPage + 1)}
+                                        className="px-3 py-1 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 disabled:opacity-50 hover:bg-gray-50"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Reusing existing Detail Modal logic */}
+                {selectedUser && (
+                    <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 animate-fade-in" onClick={closeUserModal}>
+                        <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                            <div className="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center">
+                                <h3 className="font-bold text-gray-800">User Details</h3>
+                                <button onClick={closeUserModal} className="text-gray-400 hover:text-red-500"><i className="fas fa-times"></i></button>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl ${selectedUser.isInstalled ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'}`}>
+                                        {selectedUser.platform === 'iOS' ? <i className="fab fa-apple"></i> :
+                                            selectedUser.platform === 'Android' ? <i className="fab fa-android"></i> :
+                                                <i className="fas fa-globe"></i>}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Visitor ID</p>
+                                        <p className="font-mono text-sm font-bold text-gray-800">{selectedUser.visitorId}</p>
+                                        <div className="flex gap-2 mt-1">
+                                            {selectedUser.isInstalled && <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Installed App</span>}
+                                            <span className="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full font-bold">{selectedUser.visitCount} Sessions</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase">First Seen</p>
+                                        <p className="text-xs font-bold text-gray-700">{new Date(selectedUser.firstSeen).toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase">Last Active</p>
+                                        <p className="text-xs font-bold text-gray-700">{new Date(selectedUser.lastSeen).toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase">Location</p>
+                                        <p className="text-xs font-bold text-gray-700">{selectedUser.locationId || 'Unknown'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase">Language</p>
+                                        <p className="text-xs font-bold text-gray-700 uppercase">{selectedUser.language || '?'}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 pt-2">
+                                    <div className="flex justify-between text-xs border-b border-gray-50 pb-2">
+                                        <span className="text-gray-400">IP Address</span>
+                                        <span className="font-mono text-gray-600">{selectedUser.ip || 'N/A'}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs border-b border-gray-50 pb-2">
+                                        <span className="text-gray-400">Screen Resolution</span>
+                                        <span className="font-mono text-gray-600">{selectedUser.screenResolution || 'N/A'}</span>
+                                    </div>
+                                    <div className="block text-xs">
+                                        <span className="text-gray-400 block mb-1">User Agent</span>
+                                        <p className="font-mono text-gray-500 bg-gray-50 p-2 rounded-lg break-all leading-tight">{selectedUser.userAgent || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             {/* Header / Control Bar */}
@@ -111,75 +303,98 @@ const AnalyticsPanel: React.FC = () => {
 
             {stats && (
                 <div className="animate-fade-in space-y-6">
-                    {/* Enhanced KPI Metrics Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Lifetime Stats */}
-                        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-xl shadow-lg text-white">
-                            <p className="text-xs opacity-75 uppercase font-bold tracking-wider mb-1">Lifetime Visits</p>
-                            <h3 className="text-3xl font-bold">{stats.metrics?.lifetime?.visits?.toLocaleString() || 0}</h3>
-                            <div className="mt-2 text-xs opacity-75 flex items-center justify-between">
-                                <span>Total Page Loads</span>
-                                <i className="fas fa-eye"></i>
+                    {/* KPI Cards - CLICKABLE */}
+                    <div className="grid grid-cols-3 gap-3">
+                        <div
+                            onClick={() => handleCardClick(undefined, 'lifetime', 'All Users (Lifetime)')}
+                            className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-blue-300 hover:shadow-md transition-all active:scale-95"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
+                                <i className="fas fa-users text-sm"></i>
+                            </div>
+                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Lifetime Visitors</h3>
+                            <p className="text-xl font-black text-gray-800 font-mono mt-1">{stats?.metrics?.lifetime?.visitors || 0}</p>
+                        </div>
+                        <div
+                            onClick={() => handleCardClick('installed', 'lifetime', 'Installed Users')}
+                            className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all active:scale-95"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2">
+                                <i className="fas fa-download text-sm"></i>
+                            </div>
+                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Active Installs</h3>
+                            <div className="flex flex-col items-center mt-1">
+                                <p className="text-xl font-black text-emerald-600 font-mono">{stats?.metrics?.lifetime?.installs || 0}</p>
+                                <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 rounded ml-1">
+                                    {stats?.overall?.installRate}% Rate
+                                </span>
                             </div>
                         </div>
-
-                        <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-4 rounded-xl shadow-lg text-white">
-                            <p className="text-xs opacity-75 uppercase font-bold tracking-wider mb-1">Lifetime Visitors</p>
-                            <h3 className="text-3xl font-bold">{stats.metrics?.lifetime?.visitors?.toLocaleString() || 0}</h3>
-                            <div className="mt-2 text-xs opacity-75 flex items-center justify-between">
-                                <span>Unique People</span>
-                                <i className="fas fa-users"></i>
+                        <div
+                            onClick={() => handleCardClick(undefined, undefined, 'Total Page Hits')}
+                            className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-purple-300 hover:shadow-md transition-all active:scale-95"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mb-2">
+                                <i className="fas fa-eye text-sm"></i>
                             </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-xl shadow-lg text-white">
-                            <p className="text-xs opacity-75 uppercase font-bold tracking-wider mb-1">Total Installs</p>
-                            <h3 className="text-3xl font-bold">{stats.metrics?.lifetime?.installs?.toLocaleString() || 0}</h3>
-                            <div className="mt-2 text-xs opacity-75 flex items-center justify-between">
-                                <span>App Installations</span>
-                                <i className="fas fa-download"></i>
-                            </div>
+                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Total Hits</h3>
+                            <p className="text-xl font-black text-gray-800 font-mono mt-1">{stats?.metrics?.lifetime?.visits || 0}</p>
                         </div>
                     </div>
 
-                    {/* Period Comparison Table */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                            <h4 className="font-bold text-gray-700 text-sm">
-                                <i className="fas fa-calendar-alt text-indigo-500 mr-2"></i> Period Performance
-                            </h4>
+                    {/* Period Comparisons - CLICKABLE */}
+                    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-4 border-b border-gray-50 flex justify-between items-center">
+                            <h3 className="font-bold text-gray-700">Period Performance</h3>
+                            <span className="text-[10px] px-2 py-1 bg-gray-100 text-gray-500 rounded-full font-bold">Live</span>
                         </div>
-                        <div className="grid grid-cols-4 divide-x divide-gray-100 text-center">
-                            <div className="p-4">
-                                <p className="text-xs text-gray-400 uppercase font-bold mb-2">Metric</p>
-                                <div className="space-y-3 text-sm font-medium text-gray-600 text-left pl-4">
-                                    <p>Visits (Hits)</p>
-                                    <p>New Visitors</p>
-                                    <p>Installs</p>
+                        <div className="divide-y divide-gray-50">
+                            <div
+                                onClick={() => handleCardClick(undefined, 'today', 'Users Active Today')}
+                                className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center font-bold text-xs">24h</div>
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-800">Today</p>
+                                        <p className="text-[10px] text-gray-400">Active users in last 24h</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-black text-gray-800 font-mono">{stats?.metrics?.today?.uniqueVisitors || 0}</p>
+                                    <p className="text-[10px] text-emerald-500 font-bold">+{stats?.metrics?.today?.newUsers || 0} New</p>
                                 </div>
                             </div>
-                            <div className="p-4 bg-blue-50/30">
-                                <p className="text-xs text-blue-500 uppercase font-bold mb-2">Today (24h)</p>
-                                <div className="space-y-3 font-bold text-gray-800">
-                                    <p>{stats.metrics?.today?.totalHits || 0}</p>
-                                    <p>{stats.metrics?.today?.newUsers || 0}</p>
-                                    <p>{stats.metrics?.today?.installCount || 0}</p>
+                            <div
+                                onClick={() => handleCardClick(undefined, 'week', 'Users Active This Week')}
+                                className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center font-bold text-xs">7D</div>
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-800">Last 7 Days</p>
+                                        <p className="text-[10px] text-gray-400">Weekly active users</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-black text-gray-800 font-mono">{stats?.metrics?.week?.uniqueVisitors || 0}</p>
+                                    <p className="text-[10px] text-emerald-500 font-bold">+{stats?.metrics?.week?.newUsers || 0} New</p>
                                 </div>
                             </div>
-                            <div className="p-4">
-                                <p className="text-xs text-purple-500 uppercase font-bold mb-2">This Week (7d)</p>
-                                <div className="space-y-3 font-bold text-gray-800">
-                                    <p>{stats.metrics?.week?.totalHits || 0}</p>
-                                    <p>{stats.metrics?.week?.newUsers || 0}</p>
-                                    <p>{stats.metrics?.week?.installCount || 0}</p>
+                            <div
+                                onClick={() => handleCardClick(undefined, 'month', 'Users Active This Month')}
+                                className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center font-bold text-xs">30D</div>
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-800">Last 30 Days</p>
+                                        <p className="text-[10px] text-gray-400">Monthly active users</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="p-4">
-                                <p className="text-xs text-orange-500 uppercase font-bold mb-2">This Month (30d)</p>
-                                <div className="space-y-3 font-bold text-gray-800">
-                                    <p>{stats.metrics?.month?.totalHits || 0}</p>
-                                    <p>{stats.metrics?.month?.newUsers || 0}</p>
-                                    <p>{stats.metrics?.month?.installCount || 0}</p>
+                                <div className="text-right">
+                                    <p className="text-sm font-black text-gray-800 font-mono">{stats?.metrics?.month?.uniqueVisitors || 0}</p>
+                                    <p className="text-[10px] text-emerald-500 font-bold">+{stats?.metrics?.month?.newUsers || 0} New</p>
                                 </div>
                             </div>
                         </div>

@@ -66,3 +66,16 @@ export const fetchUserDetail = async (visitorId: string) => {
     if (!response.ok) throw new Error("Failed to fetch user details");
     return await response.json();
 };
+
+export const fetchUserList = async (page: number = 1, limit: number = 20, filter?: string, period?: string) => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString()
+    });
+    if (filter) params.append('filter', filter);
+    if (period) params.append('period', period);
+
+    const response = await fetch(`/api/analytics/users?${params}`);
+    if (!response.ok) throw new Error("Failed to fetch user list");
+    return await response.json();
+};

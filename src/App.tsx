@@ -598,7 +598,20 @@ const MainApp = () => {
                             {/* Master Toggle */}
                             <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex justify-between items-center mb-6">
                                 <div>
-                                    <p className="font-bold text-emerald-900">{t.enableNotifications}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-emerald-900">{t.enableNotifications}</p>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                playAlarm('beep');
+                                                setTimeout(() => playAlarm('alarm'), 1000);
+                                            }}
+                                            className="w-6 h-6 rounded-full bg-emerald-200 text-emerald-700 flex items-center justify-center text-xs hover:bg-emerald-300 hover:scale-110 transition-all shadow-sm"
+                                            title="Test Alert Sound"
+                                        >
+                                            <i className="fas fa-play"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div
                                     className={`w-12 h-7 rounded-full relative cursor-pointer transition-colors ${settings.notificationsEnabled ? 'bg-emerald-500' : 'bg-gray-300'}`}
