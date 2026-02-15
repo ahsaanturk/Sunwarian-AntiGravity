@@ -71,7 +71,7 @@ const MainApp = () => {
     // Filter Notes: Global OR Matches Current Location (Sorted: Local first)
     const visibleNotes = useMemo(() => {
         return notesData
-            .filter(note => note.isGlobal || note.locationId === settings.selectedLocationId)
+            .filter(note => (note.isGlobal || note.locationId === settings.selectedLocationId) && note.type !== 'guide')
             .sort((a, b) => {
                 if (a.isGlobal === b.isGlobal) return 0;
                 return a.isGlobal ? 1 : -1;

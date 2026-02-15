@@ -73,7 +73,11 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Invalid data format" });
       }
 
-      // Bulk Write Operation
+      // 1. Delete locations that are NOT in the incoming data (Cleanup)
+      const incomingIds = data.map(l => l.id);
+      await LocationModel.deleteMany({ id: { $nin: incomingIds } });
+
+      // 2. Bulk Write Operation
       const operations = data.map(loc => ({
         updateOne: {
           filter: { id: loc.id },

@@ -80,7 +80,11 @@ app.post('/api/locations', async (req, res) => {
   }
 
   try {
-    // Prepare bulk operations
+    // 1. Delete locations that are NOT in the incoming data (Cleanup)
+    const incomingIds = data.map(l => l.id);
+    await LocationModel.deleteMany({ id: { $nin: incomingIds } });
+
+    // 2. Prepare bulk operations
     const operations = data.map(loc => ({
       updateOne: {
         filter: { id: loc.id },
