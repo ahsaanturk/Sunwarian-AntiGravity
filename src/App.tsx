@@ -224,6 +224,7 @@ const MainApp = () => {
     const [installPrompt, setInstallPrompt] = useState<any>(null);
     const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
+    const [expandedInstallOption, setExpandedInstallOption] = useState<string | null>(null);
 
     useEffect(() => {
         // Check if running in standalone mode
@@ -249,17 +250,21 @@ const MainApp = () => {
     }, []);
 
     const handleInstallClick = () => {
-        if (installPrompt) {
+        setExpandedInstallOption(null);
+        setIsInstallModalOpen(true);
+    };
+
+    const handlePlatformInstall = (platform: string) => {
+        if (installPrompt && (platform === 'android' || platform === 'windows')) {
             installPrompt.prompt();
             installPrompt.userChoice.then((choiceResult: any) => {
                 if (choiceResult.outcome === 'accepted') {
                     setInstallPrompt(null);
+                    setIsInstallModalOpen(false);
                 }
             });
-        } else {
-            // Fallback: Show manual instructions (e.g., for iOS)
-            setIsInstallModalOpen(true);
         }
+        setExpandedInstallOption(expandedInstallOption === platform ? null : platform);
     };
 
     // Wake Lock Logic
@@ -661,7 +666,7 @@ const MainApp = () => {
             {isInstallModalOpen && (
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-6">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsInstallModalOpen(false)}></div>
-                    <div className="relative bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-slide-up">
+                    <div className="relative bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-start mb-4">
                             <h3 className={`text-xl font-bold text-gray-800 ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>
                                 {t.installModalTitle}
@@ -671,44 +676,94 @@ const MainApp = () => {
                             </button>
                         </div>
 
-                        <p className="text-gray-600 mb-6 text-sm">{t.installModalDesc}</p>
+                        <div className="space-y-3">
+                            {/* Option 1: Android */}
+                            <div className={`border rounded-xl transition-all ${expandedInstallOption === 'android' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 bg-white'}`}>
+                                <div
+                                    onClick={() => handlePlatformInstall('android')}
+                                    className="p-4 flex items-center gap-3 cursor-pointer"
+                                >
+                                    <i className="fab fa-android text-2xl text-emerald-600"></i>
+                                    <div className="flex-1">
+                                        <p className={`font-bold text-gray-800 ${settings.language === 'ur' ? 'font-urdu' : ''}`}>{t.installAndroid}</p>
+                                        <p className="text-xs text-gray-500">{t.installAndroidDesc}</p>
+                                    </div>
+                                    <i className={`fas fa-chevron-down text-gray-400 transition-transform ${expandedInstallOption === 'android' ? 'rotate-180' : ''}`}></i>
+                                </div>
+                                {expandedInstallOption === 'android' && (
+                                    <div className="px-4 pb-4 animate-slide-up">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-emerald-100">
+                                                <i className="fas fa-ellipsis-v text-gray-500 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installAndroidStep1}</p>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-emerald-100">
+                                                <i className="fas fa-download text-emerald-600 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installAndroidStep2}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
-                        {/* Check if iOS (iPhone/iPad/iPod) */}
-                        {/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream ? (
-                            // iOS Specific Instructions
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <i className="fas fa-share-square text-blue-500 text-2xl"></i>
-                                    <div>
-                                        <p className="font-bold text-gray-800 text-sm">{t.installModalStep1}</p>
-                                        <p className="text-xs text-gray-500">{t.iosShareIcon}</p>
+                            {/* Option 2: iOS */}
+                            <div className={`border rounded-xl transition-all ${expandedInstallOption === 'ios' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}`}>
+                                <div
+                                    onClick={() => setExpandedInstallOption(expandedInstallOption === 'ios' ? null : 'ios')}
+                                    className="p-4 flex items-center gap-3 cursor-pointer"
+                                >
+                                    <i className="fab fa-apple text-2xl text-gray-800"></i>
+                                    <div className="flex-1">
+                                        <p className={`font-bold text-gray-800 ${settings.language === 'ur' ? 'font-urdu' : ''}`}>{t.installIos}</p>
+                                        <p className="text-xs text-gray-500">{t.installIosDesc}</p>
                                     </div>
+                                    <i className={`fas fa-chevron-down text-gray-400 transition-transform ${expandedInstallOption === 'ios' ? 'rotate-180' : ''}`}></i>
                                 </div>
-                                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <i className="fas fa-plus-square text-gray-700 text-2xl"></i>
-                                    <div>
-                                        <p className="font-bold text-gray-800 text-sm">{t.installModalStep2}</p>
-                                        <p className="text-xs text-gray-500">{t.iosAddIcon}</p>
+                                {expandedInstallOption === 'ios' && (
+                                    <div className="px-4 pb-4 animate-slide-up">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-blue-100">
+                                                <i className="fas fa-share-square text-blue-500 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installIosStep1}</p>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-blue-100">
+                                                <i className="fas fa-plus-square text-gray-600 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installIosStep2}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
-                        ) : (
-                            // Generic / Android / Desktop Instructions
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <i className="fas fa-ellipsis-v text-gray-700 text-2xl px-2"></i>
-                                    <div>
-                                        <p className="font-bold text-gray-800 text-sm">{t.genericInstallStep1}</p>
+
+                            {/* Option 3: Windows */}
+                            <div className={`border rounded-xl transition-all ${expandedInstallOption === 'windows' ? 'border-cyan-500 bg-cyan-50' : 'border-gray-200 bg-white'}`}>
+                                <div
+                                    onClick={() => handlePlatformInstall('windows')}
+                                    className="p-4 flex items-center gap-3 cursor-pointer"
+                                >
+                                    <i className="fab fa-windows text-2xl text-cyan-600"></i>
+                                    <div className="flex-1">
+                                        <p className={`font-bold text-gray-800 ${settings.language === 'ur' ? 'font-urdu' : ''}`}>{t.installWindows}</p>
+                                        <p className="text-xs text-gray-500">{t.installWindowsDesc}</p>
                                     </div>
+                                    <i className={`fas fa-chevron-down text-gray-400 transition-transform ${expandedInstallOption === 'windows' ? 'rotate-180' : ''}`}></i>
                                 </div>
-                                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                    <i className="fas fa-download text-emerald-600 text-2xl"></i>
-                                    <div>
-                                        <p className="font-bold text-gray-800 text-sm">{t.genericInstallStep2}</p>
+                                {expandedInstallOption === 'windows' && (
+                                    <div className="px-4 pb-4 animate-slide-up">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-cyan-100">
+                                                <i className="fas fa-ellipsis-v text-gray-500 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installWindowsStep1}</p>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-cyan-100">
+                                                <i className="fas fa-download text-cyan-600 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installWindowsStep2}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
-                        )}
+                        </div>
 
                         <div className="mt-6 text-center">
                             <button

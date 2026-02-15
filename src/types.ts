@@ -142,4 +142,18 @@ export interface Translation {
   genericInstallDesc: string;
   genericInstallStep1: string;
   genericInstallStep2: string;
+
+  // Revamped Install Flow
+  installAndroid: string;
+  installAndroidDesc: string;
+  installAndroidStep1: string;
+  installAndroidStep2: string;
+  installWindows: string;
+  installWindowsDesc: string;
+  installWindowsStep1: string;
+  installWindowsStep2: string;
+  installIos: string;
+  installIosDesc: string;
+  installIosStep1: string;
+  installIosStep2: string;
 }

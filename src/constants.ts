@@ -194,7 +194,21 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     iosAddIcon: "Add to Home Screen",
     genericInstallDesc: "To install this app:",
     genericInstallStep1: "Open Browser Menu (⋮ or ⋯)",
-    genericInstallStep2: "Tap 'Install App' or 'Add to Home Screen'"
+    genericInstallStep2: "Tap 'Install App' or 'Add to Home Screen'",
+
+    // Revamped Install Flow
+    installAndroid: "Android",
+    installAndroidDesc: "Install on Android Phone/Tablet",
+    installAndroidStep1: "Tap 'Install' or 3 dots (⋮)",
+    installAndroidStep2: "Select 'Install App'",
+    installWindows: "Windows",
+    installWindowsDesc: "Install on PC/Laptop",
+    installWindowsStep1: "Click 'Install' or Browser Menu (⋮)",
+    installWindowsStep2: "Select 'Install App'",
+    installIos: "iPhone / iPad",
+    installIosDesc: "Install on iOS Devices",
+    installIosStep1: "Tap 'Share' Button",
+    installIosStep2: "Scroll down & 'Add to Home Screen'"
   },
   ur: {
     title: "روزہ دار ایپ",
@@ -288,6 +302,20 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     iosAddIcon: "Add to Home Screen",
     genericInstallDesc: "ایپ انسٹال کرنے کا طریقہ:",
     genericInstallStep1: "براؤزر مینو کھولیں (⋮ یا ⋯)",
-    genericInstallStep2: "'Install App' یا 'Add to Home Screen' منتخب کریں"
+    genericInstallStep2: "'Install App' یا 'Add to Home Screen' منتخب کریں",
+
+    // Revamped Install Flow
+    installAndroid: "اینڈرائیڈ",
+    installAndroidDesc: "اینڈرائیڈ فون پر انسٹال کریں",
+    installAndroidStep1: "'Install' یا 3 نقطوں (⋮) پر کلک کریں",
+    installAndroidStep2: "'Install App' منتخب کریں",
+    installWindows: "ونڈوز",
+    installWindowsDesc: "کمپیوٹر پر انسٹال کریں",
+    installWindowsStep1: "'Install' یا براؤزر مینو (⋮) پر کلک کریں",
+    installWindowsStep2: "'Install App' منتخب کریں",
+    installIos: "آئی فون / آئی پیڈ",
+    installIosDesc: "آئی فون پر انسٹال کریں",
+    installIosStep1: "'Share' بٹن دبائیں",
+    installIosStep2: "نیچے سکرول کر کے 'Add to Home Screen' دبائیں"
   }
 };
