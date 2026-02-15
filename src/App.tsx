@@ -140,6 +140,11 @@ const MainApp = () => {
                 // Prefetch Dua Audio for Offline Use
                 prefetchAudio(DUAS.sehri.arabic, 'sehri_dua');
                 prefetchAudio(DUAS.iftar.arabic, 'iftar_dua');
+
+                // Track Analytics (Once per session)
+                import('./services/analyticsService').then(({ trackVisit }) => {
+                    trackVisit(settings);
+                });
             }
         });
 
