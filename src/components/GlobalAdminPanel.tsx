@@ -23,7 +23,8 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
   const [locNameUr, setLocNameUr] = useState('');
   const [locWhatsapp, setLocWhatsapp] = useState('');
   const [locCommunity, setLocCommunity] = useState('');
-  const [locNearbyAreas, setLocNearbyAreas] = useState('');
+  const [locNearbyAreasEn, setLocNearbyAreasEn] = useState('');
+  const [locNearbyAreasUr, setLocNearbyAreasUr] = useState('');
   const [locMessageEn, setLocMessageEn] = useState('');
   const [locMessageUr, setLocMessageUr] = useState('');
   const [timingsJson, setTimingsJson] = useState('');
@@ -62,7 +63,8 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
     setLocNameUr('');
     setLocWhatsapp('');
     setLocCommunity('');
-    setLocNearbyAreas('');
+    setLocNearbyAreasEn('');
+    setLocNearbyAreasUr('');
     setLocMessageEn('');
     setLocMessageUr('');
     setTimingsJson('[]');
@@ -74,7 +76,20 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
     setLocNameUr(loc.name_ur);
     setLocWhatsapp(loc.whatsapp_number || '');
     setLocCommunity(loc.whatsapp_community || '');
-    setLocNearbyAreas(loc.nearby_areas || '');
+
+    // Handle legacy string or new object format for nearby_areas
+    if (loc.nearby_areas && typeof loc.nearby_areas === 'object') {
+      setLocNearbyAreasEn(loc.nearby_areas.en || '');
+      setLocNearbyAreasUr(loc.nearby_areas.ur || '');
+    } else if (typeof loc.nearby_areas === 'string') {
+      // Legacy fallback
+      setLocNearbyAreasEn(loc.nearby_areas || '');
+      setLocNearbyAreasUr('');
+    } else {
+      setLocNearbyAreasEn('');
+      setLocNearbyAreasUr('');
+    }
+
     setLocMessageEn(loc.custom_message?.en || '');
     setLocMessageUr(loc.custom_message?.ur || '');
     setTimingsJson(JSON.stringify(loc.timings, null, 2));
@@ -92,7 +107,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
         timings: parsedTimings,
         whatsapp_number: locWhatsapp,
         whatsapp_community: locCommunity,
-        nearby_areas: locNearbyAreas,
+        nearby_areas: { en: locNearbyAreasEn, ur: locNearbyAreasUr },
         custom_message: { en: locMessageEn, ur: locMessageUr }
       };
 
@@ -316,12 +331,25 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
 
                 <div>
                   <label className="text-xs font-bold text-emerald-600 block mb-1">Nearby Areas / Villages (Description)</label>
-                  <textarea
-                    value={locNearbyAreas}
-                    onChange={e => setLocNearbyAreas(e.target.value)}
-                    placeholder="e.g. Channat, Ballan, Lakhi Jungle... (These areas follow this calendar)"
-                    className="w-full h-16 border p-3 rounded-xl focus:ring-2 ring-emerald-500 text-sm bg-emerald-50/30 border-emerald-100 resize-none"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <textarea
+                        value={locNearbyAreasEn}
+                        onChange={e => setLocNearbyAreasEn(e.target.value)}
+                        placeholder="Description in English..."
+                        className="w-full h-16 border p-3 rounded-xl focus:ring-2 ring-emerald-500 text-sm bg-emerald-50/30 border-emerald-100 resize-none"
+                      />
+                    </div>
+                    <div>
+                      <textarea
+                        value={locNearbyAreasUr}
+                        onChange={e => setLocNearbyAreasUr(e.target.value)}
+                        placeholder="اردو میں تفصیل..."
+                        className="w-full h-16 border p-3 rounded-xl focus:ring-2 ring-emerald-500 text-sm bg-emerald-50/30 border-emerald-100 resize-none font-urdu"
+                        dir="rtl"
+                      />
+                    </div>
+                  </div>
                   <p className="text-[10px] text-gray-400 mt-1">This text will be shown to users and is searchable.</p>
                 </div>
 

@@ -371,7 +371,13 @@ const MainApp = () => {
             loc.name_en.toLowerCase().includes(lowerQuery) ||
             loc.name_ur.includes(lowerQuery) ||
             loc.id.toLowerCase().includes(lowerQuery) ||
-            (loc.nearby_areas && loc.nearby_areas.toLowerCase().includes(lowerQuery)) ||
+            (loc.nearby_areas && (
+                (typeof loc.nearby_areas === 'string' && loc.nearby_areas.toLowerCase().includes(lowerQuery)) ||
+                (typeof loc.nearby_areas === 'object' && (
+                    (loc.nearby_areas.en && loc.nearby_areas.en.toLowerCase().includes(lowerQuery)) ||
+                    (loc.nearby_areas.ur && loc.nearby_areas.ur.includes(lowerQuery))
+                ))
+            )) ||
             (loc.custom_message?.en && loc.custom_message.en.toLowerCase().includes(lowerQuery)) ||
             (loc.custom_message?.ur && loc.custom_message.ur.includes(lowerQuery))
         );
@@ -446,8 +452,8 @@ const MainApp = () => {
                                         <p className={`text-xs text-amber-800 font-medium leading-relaxed ${settings.language === 'ur' ? 'font-urdu' : ''}`}>
                                             <i className="fas fa-info-circle mr-1"></i>
                                             {settings.language === 'ur'
-                                                ? `یہ کیلنڈر ان علاقوں کے لیے بھی موزوں ہے: ${activeLocation.nearby_areas}`
-                                                : `This Calendar is valid for: ${activeLocation.nearby_areas}`
+                                                ? `یہ کیلنڈر ان علاقوں کے لیے بھی موزوں ہے: ${typeof activeLocation.nearby_areas === 'object' ? (activeLocation.nearby_areas.ur || activeLocation.nearby_areas.en) : activeLocation.nearby_areas}`
+                                                : `This Calendar is valid for: ${typeof activeLocation.nearby_areas === 'object' ? (activeLocation.nearby_areas.en || activeLocation.nearby_areas.ur) : activeLocation.nearby_areas}`
                                             }
                                         </p>
                                     </div>

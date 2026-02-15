@@ -39,7 +39,7 @@ const LocationSchema = new mongoose.Schema({
   whatsapp_number: String,
   custom_message: { en: String, ur: String },
   whatsapp_community: String,
-  nearby_areas: String // Comma-separated list
+  nearby_areas: mongoose.Schema.Types.Mixed // Flexible: accepts string (legacy) or { en, ur } (new)
 });
 
 const NoteSchema = new mongoose.Schema({

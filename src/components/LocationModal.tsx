@@ -61,8 +61,11 @@ const LocationModal: React.FC<LocationModalProps> = ({
                                         )}
                                         {/* Show Nearby Areas if available, otherwise show Day Count */}
                                         {loc.nearby_areas ? (
-                                            <p className="text-[10px] text-emerald-600 font-bold mt-0.5 leading-snug">
-                                                <i className="fas fa-map-marker-alt mr-1"></i> {loc.nearby_areas}
+                                            <p className={`text-[10px] text-emerald-600 font-bold mt-0.5 leading-snug ${settings.language === 'ur' ? 'font-urdu' : ''}`}>
+                                                <i className="fas fa-map-marker-alt mr-1"></i>
+                                                {settings.language === 'ur'
+                                                    ? (loc.nearby_areas.ur || loc.nearby_areas.en)
+                                                    : (loc.nearby_areas.en || loc.nearby_areas.ur)}
                                             </p>
                                         ) : (
                                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{loc.timings.length} Days</p>

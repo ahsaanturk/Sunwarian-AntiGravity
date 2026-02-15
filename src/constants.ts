@@ -10,7 +10,7 @@ export const REMOTE_DATA_URL = "/api/locations";
 export const REMOTE_NOTES_URL = "/api/notes";
 
 export const WHATSAPP_NUMBER = "923191490380";
-export const DEFAULT_WHATSAPP_COMMUNITY = "https://whatsapp.com/channel/0029VbBlHMN5Ejy4nOt2gZ1P";
+export const DEFAULT_WHATSAPP_COMMUNITY = "https://whatsapp.com/channel/0029VbBZ0sOL2ATshTPnMu3L";
 
 export const STORAGE_KEY_DATA = "rozadaar_ramadan_master_v1";
 export const STORAGE_KEY_NOTES = "rozadaar_notes_v1";
@@ -155,7 +155,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     adminPanelTitle: "Local Data Panel",
     close: "Close",
     cancel: "Cancel",
-    adminInstr: "Format must be strict JSON. Use 24h format.",
+    adminInstr: "Format must be strict JSON. Use 24h format. 'nearby_areas' must be { 'en': '...', 'ur': '...' }",
     adminSuccess: "Data Updated Successfully!",
     adminErrorJson: "Invalid JSON Format",
     adminErrorAuth: "Wrong Password",
@@ -274,7 +274,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     adminPanelTitle: "لوکل ڈیٹا پینل",
     close: "بند کریں",
     cancel: "منسوخ کریں",
-    adminInstr: "JSON فارمیٹ درست ہونا چاہیے۔ 24 گھنٹے کا وقت استعمال کریں۔",
+    adminInstr: "JSON فارمیٹ درست ہونا چاہیے۔ 'nearby_areas' کو { 'en': '...', 'ur': '...' } کی شکل میں لکھیں۔",
     adminSuccess: "ڈیٹا کامیابی سے اپ ڈیٹ ہو گیا!",
     adminErrorJson: "غلط JSON فارمیٹ",
     adminErrorAuth: "غلط پاس ورڈ",
