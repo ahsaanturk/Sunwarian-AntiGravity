@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAnalytics } from '../services/analyticsService';
+import { fetchAnalytics, fetchUserDetail } from '../services/analyticsService';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface Stats {
@@ -51,6 +51,27 @@ const AnalyticsPanel: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const [selectedUser, setSelectedUser] = useState<any | null>(null);
+    const [loadingUser, setLoadingUser] = useState(false);
+
+    const handleViewUser = async (visitorId: string) => {
+        setLoadingUser(true);
+        try {
+            console.log("Fetching details for:", visitorId);
+            const userData = await fetchUserDetail(visitorId);
+            console.log("User Data Received:", userData);
+            setSelectedUser(userData);
+        } catch (e) {
+            console.error("Failed to load user details", e);
+        } finally {
+            setLoadingUser(false);
+        }
+    };
+
+    const closeUserModal = () => {
+        setSelectedUser(null);
     };
 
     return (
@@ -236,10 +257,10 @@ const AnalyticsPanel: React.FC = () => {
                                 <thead className="bg-gray-50 text-gray-700 uppercase font-bold text-xs">
                                     <tr>
                                         <th className="px-4 py-3 rounded-tl-lg">User</th>
-                                        <th className="px-4 py-3">Details</th>
                                         <th className="px-4 py-3">Platform</th>
                                         <th className="px-4 py-3">Last Seen</th>
-                                        <th className="px-4 py-3 rounded-tr-lg">Status</th>
+                                        <th className="px-4 py-3">Status</th>
+                                        <th className="px-4 py-3 rounded-tr-lg text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -247,12 +268,6 @@ const AnalyticsPanel: React.FC = () => {
                                         <tr key={user.visitorId} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-4 py-3 font-mono text-xs text-indigo-600">
                                                 {user.visitorId.slice(0, 8)}...
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-gray-700">{user.ip || 'Unknown IP'}</span>
-                                                    <span className="text-[10px] text-gray-400 truncate max-w-[150px]" title={user.userAgent}>{user.userAgent || 'Unknown Browser'}</span>
-                                                </div>
                                             </td>
                                             <td className="px-4 py-3">
                                                 {user.platform === 'Android' && <i className="fab fa-android text-green-500 mr-2"></i>}
@@ -272,6 +287,14 @@ const AnalyticsPanel: React.FC = () => {
                                                     <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px]">BROWSER</span>
                                                 )}
                                             </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button
+                                                    onClick={() => handleViewUser(user.visitorId)}
+                                                    className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1 rounded text-xs font-bold transition-colors"
+                                                >
+                                                    {loadingUser ? 'Loading...' : 'View Details'}
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                     {(!stats.recentUsers || stats.recentUsers.length === 0) && (
@@ -281,6 +304,80 @@ const AnalyticsPanel: React.FC = () => {
                             </table>
                         </div>
                     </div>
+
+                    {/* User Detail Modal */}
+                    {selectedUser && (
+                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in" onClick={closeUserModal}>
+                            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                                <div className="bg-indigo-600 p-6 text-white flex justify-between items-start">
+                                    <div>
+                                        <h3 className="text-xl font-bold">User Details</h3>
+                                        <p className="text-indigo-200 text-xs font-mono mt-1">{selectedUser.visitorId}</p>
+                                    </div>
+                                    <button onClick={closeUserModal} className="bg-white/20 hover:bg-white/30 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-3 bg-gray-50 rounded-lg">
+                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Total Visits</p>
+                                            <p className="font-bold text-gray-800 text-lg">{selectedUser.visitCount}</p>
+                                        </div>
+                                        <div className="p-3 bg-gray-50 rounded-lg">
+                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Status</p>
+                                            <p className="font-bold text-gray-800">
+                                                {selectedUser.isInstalled ?
+                                                    <span className="text-emerald-600">Installed App</span> :
+                                                    <span className="text-gray-500">Browser User</span>
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Platform & Device</p>
+                                            <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 break-words">
+                                                <p><span className="font-bold">OS:</span> {selectedUser.platform}</p>
+                                                <p><span className="font-bold">Resolution:</span> {selectedUser.screenResolution || 'Unknown'}</p>
+                                                <p className="mt-2 text-xs opacity-75">{selectedUser.userAgent || 'No User Agent Data'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Location & Language</p>
+                                            <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-600">
+                                                <p><span className="font-bold">Location ID:</span> {selectedUser.locationId || 'Default'}</p>
+                                                <p><span className="font-bold">Language:</span> {selectedUser.language === 'ur' ? 'Urdu' : 'English'}</p>
+                                                <p><span className="font-bold">IP Address:</span> {selectedUser.ip || 'Unknown'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Timestamps</p>
+                                            <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-600">
+                                                <p><span className="font-bold">First Seen:</span> {new Date(selectedUser.firstSeen).toLocaleString()}</p>
+                                                <p><span className="font-bold">Last Seen:</span> {new Date(selectedUser.lastSeen).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Referrer</p>
+                                            <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 break-words">
+                                                {selectedUser.referrer || 'Direct / None'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 p-4 text-center border-t border-gray-100">
+                                    <button onClick={closeUserModal} className="text-indigo-600 font-bold text-sm hover:underline">
+                                        Close Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

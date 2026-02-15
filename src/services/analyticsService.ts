@@ -1,6 +1,6 @@
 import { AppSettings } from '../types';
 
-const API_TRACK_URL = 'http://localhost:5000/api/analytics/track';
+const API_TRACK_URL = '/api/analytics/track';
 const STORAGE_KEY_VISITOR_ID = 'sunwarian_visitor_id';
 const SESSION_KEY_TRACKED = 'sunwarian_session_tracked';
 
@@ -56,7 +56,13 @@ export const trackVisit = async (settings: AppSettings) => {
 };
 
 export const fetchAnalytics = async () => {
-    const response = await fetch('http://localhost:5000/api/analytics/stats');
+    const response = await fetch('/api/analytics/stats');
     if (!response.ok) throw new Error("Failed to fetch stats");
+    return await response.json();
+};
+
+export const fetchUserDetail = async (visitorId: string) => {
+    const response = await fetch(`/api/analytics/user/${visitorId}`);
+    if (!response.ok) throw new Error("Failed to fetch user details");
     return await response.json();
 };

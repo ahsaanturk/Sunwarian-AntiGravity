@@ -290,8 +290,8 @@ app.get('/api/analytics/stats', async (req, res) => {
       { $group: { _id: "$platform", count: { $sum: 1 } } }
     ]);
 
-    // Get Recent Users (Last 50)
-    const recentUsers = await UserModel.find().sort({ lastSeen: -1 }).limit(50);
+    // Get Recent Users (Last 50) - Summary Only (Optimization)
+    const recentUsers = await UserModel.find({}, 'visitorId platform lastSeen isInstalled country').sort({ lastSeen: -1 }).limit(50);
 
     // Enhanced Metrics: Lifetime, Today, Week, Month
     const todayStr = new Date().toISOString().split('T')[0];
@@ -346,6 +346,17 @@ app.get('/api/analytics/stats', async (req, res) => {
       platforms: platformStats,
       recentUsers
     });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET: Fetch Single User Details (Lazy Load)
+app.get('/api/analytics/user/:visitorId', async (req, res) => {
+  try {
+    const user = await UserModel.findOne({ visitorId: req.params.visitorId });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

@@ -10,9 +10,9 @@ export const requestNotificationPermission = async () => {
 export const sendNotification = (title: string, body: string) => {
   if (Notification.permission === "granted") {
     if (navigator.vibrate) {
-        navigator.vibrate([300, 100, 300]);
+      navigator.vibrate([300, 100, 300]);
     }
-    
+
     new Notification(title, {
       body,
       icon: "https://cdn-icons-png.flaticon.com/512/4358/4358667.png",
@@ -26,7 +26,7 @@ export const playAlarm = (type: 'beep' | 'alarm') => {
   if (!AudioContext) return;
 
   const ctx = new AudioContext();
-  
+
   const playTone = (freq: number, start: number, duration: number, vol: number = 0.2) => {
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
@@ -41,19 +41,24 @@ export const playAlarm = (type: 'beep' | 'alarm') => {
   };
 
   if (type === 'beep') {
-    // Soft double chime
-    playTone(660, ctx.currentTime, 0.5);
-    playTone(880, ctx.currentTime + 0.2, 0.5);
-  } else {
-    // Melodic sequence for the main alarm
+    // Pre-notification: "Beep 3 times"
     const now = ctx.currentTime;
-    const notes = [440, 554, 659, 880]; // A major arpeggio
-    notes.forEach((note, i) => {
-        playTone(note, now + i * 0.25, 0.8, 0.15);
-    });
-    // Repeat once
-    notes.forEach((note, i) => {
-        playTone(note, now + 1.2 + i * 0.25, 0.8, 0.15);
-    });
+    for (let i = 0; i < 3; i++) {
+      const startTime = now + (i * 0.8); // 800ms gap
+      playTone(660, startTime, 0.2);
+      playTone(880, startTime + 0.15, 0.4); // Slightly higher pitch second tone
+    }
+  } else {
+    // On-time Alarm: "Beep in different way for 6 times"
+    const now = ctx.currentTime;
+    // Pattern: A distinct triplet alert (High-Mid-High)
+    const notes = [880, 587, 880]; // A5, D5, A5
+
+    for (let loop = 0; loop < 6; loop++) {
+      const loopStart = now + (loop * 1.2); // 1.2s per loop
+      notes.forEach((note, index) => {
+        playTone(note, loopStart + (index * 0.15), 0.15, 0.3);
+      });
+    }
   }
 };
