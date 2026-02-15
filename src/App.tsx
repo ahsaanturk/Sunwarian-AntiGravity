@@ -263,8 +263,15 @@ const MainApp = () => {
                     setIsInstallModalOpen(false);
                 }
             });
+
+            // Delayed fallback to instructions (2 seconds) as requested
+            setTimeout(() => {
+                setExpandedInstallOption(platform);
+            }, 2000);
+        } else {
+            // Immediate feedback if no prompt or iOS
+            setExpandedInstallOption(expandedInstallOption === platform ? null : platform);
         }
-        setExpandedInstallOption(expandedInstallOption === platform ? null : platform);
     };
 
     // Wake Lock Logic
@@ -701,6 +708,10 @@ const MainApp = () => {
                                                 <i className="fas fa-download text-emerald-600 w-6 text-center"></i>
                                                 <p className="text-xs font-medium text-gray-700">{t.installAndroidStep2}</p>
                                             </div>
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-emerald-100">
+                                                <i className="fas fa-check-circle text-emerald-600 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installAndroidStep3}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -727,8 +738,12 @@ const MainApp = () => {
                                                 <p className="text-xs font-medium text-gray-700">{t.installIosStep1}</p>
                                             </div>
                                             <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-blue-100">
-                                                <i className="fas fa-plus-square text-gray-600 w-6 text-center"></i>
+                                                <i className="fas fa-arrow-down text-gray-500 w-6 text-center"></i>
                                                 <p className="text-xs font-medium text-gray-700">{t.installIosStep2}</p>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-blue-100">
+                                                <i className="fas fa-plus-square text-gray-700 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installIosStep3}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -758,6 +773,10 @@ const MainApp = () => {
                                             <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-cyan-100">
                                                 <i className="fas fa-download text-cyan-600 w-6 text-center"></i>
                                                 <p className="text-xs font-medium text-gray-700">{t.installWindowsStep2}</p>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-cyan-100">
+                                                <i className="fas fa-check-circle text-cyan-600 w-6 text-center"></i>
+                                                <p className="text-xs font-medium text-gray-700">{t.installWindowsStep3}</p>
                                             </div>
                                         </div>
                                     </div>

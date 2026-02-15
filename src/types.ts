@@ -148,12 +148,15 @@ export interface Translation {
   installAndroidDesc: string;
   installAndroidStep1: string;
   installAndroidStep2: string;
+  installAndroidStep3: string;
   installWindows: string;
   installWindowsDesc: string;
   installWindowsStep1: string;
   installWindowsStep2: string;
+  installWindowsStep3: string;
   installIos: string;
   installIosDesc: string;
   installIosStep1: string;
   installIosStep2: string;
+  installIosStep3: string;
 }
