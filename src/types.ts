@@ -172,4 +172,5 @@ export interface Translation {
   // WhatsApp Messages
   supportPreFilledMsg: string;
   requestLocationMsg: string;
+  shareApp: string;
 }

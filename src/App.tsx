@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import { TRANSLATIONS, INITIAL_MASTER_DATA, ADMIN_ROUTE, GLOBAL_ADMIN_ROUTE, REMOTE_DATA_URL, REMOTE_NOTES_URL, WHATSAPP_NUMBER, DEFAULT_WHATSAPP_COMMUNITY, DUAS, DEFAULT_USER_GUIDE } from './constants';
+import { TRANSLATIONS, INITIAL_MASTER_DATA, ADMIN_ROUTE, GLOBAL_ADMIN_ROUTE, REMOTE_DATA_URL, REMOTE_NOTES_URL, WHATSAPP_NUMBER, DEFAULT_WHATSAPP_COMMUNITY, DUAS, DEFAULT_USER_GUIDE, SHARE_APP_URL } from './constants';
 import { getStoredData, saveStoredData, getSettings, saveSettings, getStoredNotes, saveStoredNotes } from './services/storageService';
 import { RamadanTiming, Language, AppSettings, LocationData, Note } from './types';
 import { requestNotificationPermission, playAlarm, stopAlarm } from './services/notificationService';
@@ -272,6 +272,30 @@ const MainApp = () => {
     const handleInstallClick = () => {
         setExpandedInstallOption(null);
         setIsInstallModalOpen(true);
+    };
+
+    const handleShare = async () => {
+        const shareData = {
+            title: t.title,
+            text: `Check out ${t.title} for accurate Ramadan timings!`,
+            url: SHARE_APP_URL
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log('Share failed:', err);
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            try {
+                await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+                alert("Link copied to clipboard!");
+            } catch (err) {
+                console.log('Clipboard failed:', err);
+            }
+        }
     };
 
     const handlePlatformInstall = (platform: string) => {
@@ -579,6 +603,20 @@ const MainApp = () => {
                                 </div>
                                 <i className="fas fa-chevron-right text-gray-300"></i>
                             </div>
+
+                            {/* Beautiful Share Button */}
+                            <button
+                                onClick={handleShare}
+                                className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white p-5 rounded-2xl shadow-lg shadow-violet-200 flex justify-between items-center transform transition-transform active:scale-[0.98]"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl backdrop-blur-sm">
+                                        <i className="fas fa-share-alt"></i>
+                                    </div>
+                                    <span className={`font-bold text-lg ${settings.language === 'ur' ? 'font-urdu-heading' : ''}`}>{t.shareApp}</span>
+                                </div>
+                                <i className="fas fa-chevron-right text-violet-200"></i>
+                            </button>
 
                             {/* PWA: Install App Button (Visible if NOT standalone) */}
                             {!isStandalone && (

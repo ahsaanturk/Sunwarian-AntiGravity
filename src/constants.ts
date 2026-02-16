@@ -11,6 +11,7 @@ export const REMOTE_NOTES_URL = "/api/notes";
 
 export const WHATSAPP_NUMBER = "923191490380";
 export const DEFAULT_WHATSAPP_COMMUNITY = "https://whatsapp.com/channel/0029VbBZ0sOL2ATshTPnMu3L";
+export const SHARE_APP_URL = "https://rozadaar.vercel.app";
 
 export const STORAGE_KEY_DATA = "rozadaar_ramadan_master_v1";
 export const STORAGE_KEY_NOTES = "rozadaar_notes_v1";
@@ -224,7 +225,8 @@ export const TRANSLATIONS: Record<Language, Translation> = {
 
     // WhatsApp Messages
     supportPreFilledMsg: "Aslam O Alaikum, I want to know something",
-    requestLocationMsg: "Aslam O Alaikum, Request to add my location, my location is not present in locations."
+    requestLocationMsg: "Aslam O Alaikum, Request to add my location, my location is not present in locations.",
+    shareApp: "Share App with Friend"
   },
   ur: {
     title: "روزہ دار ایپ",
@@ -347,7 +349,8 @@ export const TRANSLATIONS: Record<Language, Translation> = {
 
     // WhatsApp Messages
     supportPreFilledMsg: "السلام و علیکم، میں کچھ پوچھنا چاہتا ہوں",
-    requestLocationMsg: "اسلام علیکم، میں اپنے علاقے کا اضافہ کروانا چاہتا ہوں، میرا علاقہ لسٹ میں موجود نہیں ہے۔"
+    requestLocationMsg: "اسلام علیکم، میں اپنے علاقے کا اضافہ کروانا چاہتا ہوں، میرا علاقہ لسٹ میں موجود نہیں ہے۔",
+    shareApp: "دوستوں کے ساتھ شیئر کریں"
   }
 };
 
