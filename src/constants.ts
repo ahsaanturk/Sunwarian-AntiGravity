@@ -23,7 +23,8 @@ export const DEFAULT_SETTINGS = {
   autoSync: true,
   sehriAlertOffset: 60, // 1 hour default
   iftarAlertOffset: 20, // 20 min default
-  wakeLockEnabled: false
+  wakeLockEnabled: false,
+  alarmTone: 'digital'
 };
 
 export const INITIAL_RAMADAN_DATA: RamadanTiming[] = [
@@ -143,6 +144,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     configureAlerts: "Configure Alerts",
     sehriAlertTime: "Sehri Alert",
     iftarAlertTime: "Iftar Alert",
+    alarmToneLabel: "Alarm Sound",
+    toneDigital: "Digital Beep (Strong)",
+    toneIslamic: "Islamic Chime (Soft)",
+    toneVoice: "Voice (Speaking)",
     timeOptionOff: "Off",
     timeOption10Min: "10 Minutes Before",
     timeOption20Min: "20 Minutes Before",
@@ -262,6 +267,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     configureAlerts: "ترتیبات",
     sehriAlertTime: "سحری کا الرٹ",
     iftarAlertTime: "افطار کا الرٹ",
+    alarmToneLabel: "الارم کی آواز",
+    toneDigital: "ڈیجیٹل (تیز)",
+    toneIslamic: "اسلامی (ہلکا)",
+    toneVoice: "آواز (بولنے والا)",
     timeOptionOff: "بند",
     timeOption10Min: "10 منٹ پہلے",
     timeOption20Min: "20 منٹ پہلے",

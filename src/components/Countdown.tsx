@@ -97,7 +97,7 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
           if (totalMinutesLeft === settings.sehriAlertOffset && secondsLeft === 0) {
             const msg = settings.sehriAlertOffset === 60 ? translation.sehriAlert1Hour : `${settings.sehriAlertOffset} ${translation.minutes} remaining for Sehri!`;
             sendNotification(translation.ramadanAlert, msg);
-            playAlarm('beep');
+            playAlarm('beep', settings.alarmTone, 'sehri');
           }
         }
 
@@ -106,7 +106,7 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
           if (totalMinutesLeft === settings.iftarAlertOffset && secondsLeft === 0) {
             const msg = settings.iftarAlertOffset === 20 ? translation.iftarAlert20Min : `${settings.iftarAlertOffset} ${translation.minutes} remaining for Iftar!`;
             sendNotification(translation.ramadanAlert, msg);
-            playAlarm('beep');
+            playAlarm('beep', settings.alarmTone, 'iftar');
           }
         }
 
@@ -114,7 +114,7 @@ const Countdown: React.FC<CountdownProps> = ({ timings, translation, settings })
         if (hours === 0 && minutes === 0 && seconds === 0) {
           const msg = isSehri ? translation.sehriEnded : translation.iftarTime;
           sendNotification(translation.ramadanAlert, msg);
-          playAlarm('alarm');
+          playAlarm('alarm', settings.alarmTone, isSehri ? 'sehri' : 'iftar');
         }
       }
     };

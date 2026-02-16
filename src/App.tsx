@@ -644,8 +644,8 @@ const MainApp = () => {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                playAlarm('beep');
-                                                setTimeout(() => playAlarm('alarm'), 1000);
+                                                playAlarm('beep', settings.alarmTone);
+                                                setTimeout(() => playAlarm('alarm', settings.alarmTone), 1000);
                                             }}
                                             className="w-6 h-6 rounded-full bg-emerald-200 text-emerald-700 flex items-center justify-center text-xs hover:bg-emerald-300 hover:scale-110 transition-all shadow-sm"
                                             title="Test Alert Sound"
@@ -665,6 +665,28 @@ const MainApp = () => {
                             {/* Alert Configurations */}
                             {settings.notificationsEnabled && (
                                 <div className="space-y-4 animate-slide-up">
+                                    {/* ALARM TONE SELECTOR */}
+                                    <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                        <div className="flex items-center gap-2 text-indigo-600 mb-3">
+                                            <i className="fas fa-music"></i>
+                                            <span className="font-bold">{t.alarmToneLabel}</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                            {['digital', 'islamic', 'voice'].map((tone) => (
+                                                <button
+                                                    key={tone}
+                                                    onClick={() => handleSettingsUpdate({ ...settings, alarmTone: tone as any })}
+                                                    className={`py-3 px-3 rounded-xl border transition-all font-bold text-xs flex items-center justify-between group ${settings.alarmTone === tone ? 'bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-200' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-white hover:border-indigo-300'}`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <i className={`fas ${tone === 'digital' ? 'fa-stopwatch-20' : tone === 'islamic' ? 'fa-mosque' : 'fa-microphone'}`}></i>
+                                                        <span>{tone === 'digital' ? t.toneDigital : tone === 'islamic' ? t.toneIslamic : t.toneVoice}</span>
+                                                    </div>
+                                                    {settings.alarmTone === tone && <i className="fas fa-check-circle"></i>}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                     {/* Sehri Config */}
                                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
                                         <div className="flex items-center justify-between mb-3">

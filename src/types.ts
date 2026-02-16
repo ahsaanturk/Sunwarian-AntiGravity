@@ -40,6 +40,7 @@ export interface AppSettings {
   sehriAlertOffset: number; // minutes, 0 = off
   iftarAlertOffset: number; // minutes, 0 = off
   wakeLockEnabled: boolean;
+  alarmTone: 'digital' | 'islamic' | 'voice';
 }
 
 export interface Translation {
@@ -89,6 +90,10 @@ export interface Translation {
   configureAlerts: string;
   sehriAlertTime: string;
   iftarAlertTime: string;
+  alarmToneLabel: string;
+  toneDigital: string;
+  toneIslamic: string;
+  toneVoice: string;
   timeOptionOff: string;
   timeOption10Min: string;
   timeOption20Min: string;
