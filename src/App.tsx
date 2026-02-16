@@ -599,7 +599,7 @@ const MainApp = () => {
                                 </Link>
                                 <div className="mt-8 mb-20 text-center text-gray-400 text-xs space-y-1">
                                     <p className="font-urdu-heading text-sm">طالبِ دعا: نعمت اللہ خان</p>
-                                    <p className="font-medium opacity-70">Talib E Dua: Nehmat Ullah Khan</p>
+                                    <p className="font-medium opacity-70">Request for Prayers: Nehmat Ullah Khan</p>
                                 </div>
                             </div>
                         </div>
