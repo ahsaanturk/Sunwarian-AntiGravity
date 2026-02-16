@@ -597,6 +597,10 @@ const MainApp = () => {
                                 <Link to={ADMIN_ROUTE} className="text-gray-400 text-xs py-2 px-6 rounded-full border border-gray-200">
                                     <i className="fas fa-lock mr-2"></i>{t.adminLogin}
                                 </Link>
+                                <div className="mt-8 mb-20 text-center text-gray-400 text-xs space-y-1">
+                                    <p className="font-urdu-heading text-sm">طالبِ دعا: نعمت اللہ خان</p>
+                                    <p className="font-medium opacity-70">Talib E Dua: Nehmat Ullah Khan</p>
+                                </div>
                             </div>
                         </div>
                     } />
