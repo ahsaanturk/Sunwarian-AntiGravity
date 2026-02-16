@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/gulzar": "^5.2.8",
+    "@fontsource/noto-nastaliq-urdu": "^5.2.8",
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@google/genai": "^1.41.0",
     "cors": "^2.8.6",
