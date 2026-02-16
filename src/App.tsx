@@ -600,8 +600,8 @@ const MainApp = () => {
                                     <i className="fas fa-lock mr-2"></i>{t.adminLogin}
                                 </Link>
                                 <div className="mt-8 mb-20 text-center text-gray-400 text-xs space-y-1">
-                                    <p className="font-urdu-heading text-sm">طالبِ دعا: نعمت اللہ خان</p>
-                                    <p className="font-medium opacity-70">Request for Prayers: Nehmat Ullah Khan</p>
+                                    <p className="font-urdu-heading text-sm">طالبِ دعا: ٹیم روزہ دار ایپ</p>
+                                    <p className="font-medium opacity-70">Request for Prayers: Team Rozadaar App</p>
                                 </div>
                             </div>
                         </div>

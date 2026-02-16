@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { DUAS, TRANSLATIONS } from '../constants';
 import { Language, RamadanTiming } from '../types';
-import { playDuaAudio } from '../services/audioService';
+import { playDuaAudio, stopCurrentAudio } from '../services/audioService';
 import { getLocalDateString } from '../services/timeService';
 
 interface DuaSliderProps {
@@ -61,14 +61,33 @@ const DuaSlider: React.FC<DuaSliderProps> = ({ language, timings, currentTime })
     }
   };
 
-  const handlePlayDua = async (text: string, id: string) => {
-    if (isSpeaking) return;
-    setIsSpeaking(true);
-    const success = await playDuaAudio(text, id);
-    if (!success && !navigator.onLine) {
-      alert(language === 'ur' ? "آڈیو صرف آن لائن ہونے پر دستیاب ہے (پہلی بار)" : "Audio only available online (first time download)");
+  const handlePlayDua = (text: string, id: string) => {
+    if (isSpeaking) {
+      stopCurrentAudio();
+      setIsSpeaking(false);
+      return;
     }
-    setTimeout(() => setIsSpeaking(false), 8000);
+
+    const audio = playDuaAudio(text, id);
+    if (audio) {
+      setIsSpeaking(true);
+
+      // Auto-reset when audio ends
+      audio.onended = () => setIsSpeaking(false);
+
+      // Handle errors or external pauses
+      audio.onpause = () => {
+        // Only reset if it wasn't paused by us calling stopCurrentAudio() immediately before playing a new one
+        // But since we have a simple toggle, this is fine for now.
+        // Actually, onpause might trigger when we switch duas.
+        // Let's rely on onended for natural completion.
+        // If we want manual stop to update state, we do it in the if(isSpeaking) block.
+      };
+    } else {
+      if (!navigator.onLine) {
+        alert(language === 'ur' ? "آڈیو صرف آن لائن ہونے پر دستیاب ہے (پہلی بار)" : "Audio only available online (first time download)");
+      }
+    }
   };
 
   const DuaCard = ({ data, id, colorClass }: { data: typeof DUAS.sehri, id: string, colorClass: string }) => (
