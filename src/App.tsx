@@ -687,15 +687,15 @@ const MainApp = () => {
                                             <span className="font-bold">{t.alarmToneLabel}</span>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                            {['digital', 'islamic', 'voice'].map((tone) => (
+                                            {['digital', 'islamic', 'classic'].map((tone) => (
                                                 <button
                                                     key={tone}
                                                     onClick={() => handleSettingsUpdate({ ...settings, alarmTone: tone as any })}
                                                     className={`py-3 px-3 rounded-xl border transition-all font-bold text-xs flex items-center justify-between group ${settings.alarmTone === tone ? 'bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-200' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-white hover:border-indigo-300'}`}
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <i className={`fas ${tone === 'digital' ? 'fa-stopwatch-20' : tone === 'islamic' ? 'fa-mosque' : 'fa-microphone'}`}></i>
-                                                        <span>{tone === 'digital' ? t.toneDigital : tone === 'islamic' ? t.toneIslamic : t.toneVoice}</span>
+                                                        <i className={`fas ${tone === 'digital' ? 'fa-stopwatch-20' : tone === 'islamic' ? 'fa-mosque' : 'fa-bell'}`}></i>
+                                                        <span>{tone === 'digital' ? t.toneDigital : tone === 'islamic' ? t.toneIslamic : t.toneClassic}</span>
                                                     </div>
                                                     {settings.alarmTone === tone && <i className="fas fa-check-circle"></i>}
                                                 </button>

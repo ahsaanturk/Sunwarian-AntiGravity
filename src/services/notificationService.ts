@@ -33,14 +33,9 @@ export const stopAlarm = () => {
   }
 };
 
-export const playAlarm = (type: 'beep' | 'alarm', tone: 'digital' | 'islamic' | 'voice' = 'digital', eventType?: 'sehri' | 'iftar') => {
+export const playAlarm = (type: 'beep' | 'alarm', tone: 'digital' | 'islamic' | 'classic' = 'digital', eventType?: 'sehri' | 'iftar') => {
   // Stop any currently playing alarm first
   stopAlarm();
-
-  if (tone === 'voice') {
-    speakMessage(type, eventType);
-    return;
-  }
 
   const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return;
@@ -48,7 +43,7 @@ export const playAlarm = (type: 'beep' | 'alarm', tone: 'digital' | 'islamic' | 
   const ctx = new AudioContext();
   currentAudioCtx = ctx;
 
-  const playTone = (freq: number, start: number, duration: number, vol: number = 0.2, type: 'sine' | 'triangle' = 'sine') => {
+  const playTone = (freq: number, start: number, duration: number, vol: number = 0.2, type: 'sine' | 'triangle' | 'sawtooth' | 'square' = 'sine') => {
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
     oscillator.type = type;
@@ -67,7 +62,7 @@ export const playAlarm = (type: 'beep' | 'alarm', tone: 'digital' | 'islamic' | 
     // Pre-notification: Simple Beeps
     for (let i = 0; i < 3; i++) {
       const startTime = now + (i * 0.8);
-      playTone(tone === 'islamic' ? 523.25 : 660, startTime, 0.4, 0.3); // C5 for Islamic, E5 for Digital
+      playTone(tone === 'islamic' ? 523.25 : 660, startTime, 0.4, 0.3); // C5 for Islamic, E5 for Digital/Classic
     }
   } else {
     // MAIN ALARM
@@ -90,31 +85,23 @@ export const playAlarm = (type: 'beep' | 'alarm', tone: 'digital' | 'islamic' | 
           playTone(note, loopStart + (index * 0.2), 2.0, 0.3, 'sine');
         });
       }
+    } else if (tone === 'classic') {
+      // CLASSIC ALARM: Very Strong, Old School Alarm Clock (Sawtooth/Square)
+      // Pattern: Ringer (Fast trill) ... Pause ... Ringer
+      // Note: 880Hz (A5) for classic bell sound
+      for (let loop = 0; loop < 10; loop++) {
+        const loopStart = now + (loop * 2.0); // 2 second cycle
+
+        // Generate a "Rring-Rring" effect (2 bursts)
+        for (let burst = 0; burst < 2; burst++) {
+          const burstStart = loopStart + (burst * 0.4);
+          // Fast trill within burst
+          for (let click = 0; click < 6; click++) {
+            playTone(880, burstStart + (click * 0.05), 0.05, 0.5, 'square');
+            playTone(800, burstStart + (click * 0.05), 0.05, 0.5, 'sawtooth'); // Mix for dissonance
+          }
+        }
+      }
     }
   }
-};
-
-const speakMessage = (type: 'beep' | 'alarm', eventType?: 'sehri' | 'iftar') => {
-  if (!('speechSynthesis' in window)) return;
-
-  // Stop any current speech
-  window.speechSynthesis.cancel();
-
-  let text = "";
-  if (type === 'beep') {
-    text = eventType === 'sehri' ? "Attention. Sehri time is ending soon." : "Attention. Iftar time is approaching.";
-  } else {
-    text = eventType === 'sehri' ? "Sehri time has ended. Please stop eating." : "It is time for Iftar. You may break your fast.";
-  }
-
-  // If no event type known (e.g. test button), generic message
-  if (!eventType) {
-    text = type === 'beep' ? "This is a pre-alert test." : "This is the main alarm test.";
-  }
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.9;
-  utterance.pitch = 1;
-  utterance.volume = 1;
-  window.speechSynthesis.speak(utterance);
 };
