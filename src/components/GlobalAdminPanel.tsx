@@ -17,6 +17,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [editingLocId, setEditingLocId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'editor' | 'analytics'>('editor'); // New Tab State
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Location Fields
   const [locNameEn, setLocNameEn] = useState('');
@@ -511,26 +512,65 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
                   </div>
                 </div>
 
-                {/* Locations Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {data.map(loc => (
-                    <div key={loc.id} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border border-gray-100">
-                      <div>
-                        <h3 className="font-bold text-gray-800">{loc.name_en}</h3>
-                        <p className="text-xs text-gray-400">{loc.timings.length} Days</p>
-                        {loc.custom_message && <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[9px] rounded-md mr-1">Announcement</span>}
-                        {notes.some(n => n.locationId === loc.id) && <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] rounded-md">Notes</span>}
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => startEditLocation(loc)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><i className="fas fa-edit"></i></button>
-                        <button onClick={() => deleteLocation(loc.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><i className="fas fa-trash"></i></button>
-                      </div>
+                {/* Locations Grid with Search and Add Button at Top */}
+                <div className="space-y-4">
+                  {/* Search and Add Header */}
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
+                      <i className="fas fa-search text-gray-400"></i>
+                      <input
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={translation.searchPlaceholder}
+                        className="bg-transparent border-none outline-none w-full text-sm font-bold text-gray-700 placeholder-gray-400"
+                      />
+                      {searchQuery && <button onClick={() => setSearchQuery('')} className="text-gray-400 hover:text-red-500"><i className="fas fa-times-circle"></i></button>}
                     </div>
-                  ))}
-                  <button onClick={startAddLocation} className="border-2 border-dashed border-gray-300 p-6 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all bg-white/50">
-                    <i className="fas fa-plus text-2xl mb-2"></i>
-                    <span className="font-bold">{translation.addLocation}</span>
-                  </button>
+                    <button onClick={startAddLocation} className="md:w-auto w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-blue-200 transition-all flex items-center justify-center gap-2">
+                      <i className="fas fa-plus bg-white/20 p-1 rounded-full text-xs"></i>
+                      <span>{translation.addLocation}</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Filtered Locations */}
+                    {data.filter(loc =>
+                      !searchQuery ||
+                      loc.name_en.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      loc.name_ur.includes(searchQuery) ||
+                      (loc.custom_message?.en?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                      (loc.custom_message?.ur?.includes(searchQuery))
+                    ).map(loc => (
+                      <div key={loc.id} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border border-gray-100 hover:border-emerald-200 transition-colors">
+                        <div>
+                          <h3 className="font-bold text-gray-800">{loc.name_en}</h3>
+                          <p className="text-xs text-gray-400">{loc.timings.length} Days</p>
+                          {loc.custom_message && <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[9px] rounded-md mr-1">Announcement</span>}
+                          {notes.some(n => n.locationId === loc.id) && <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] rounded-md">Notes</span>}
+                          {/* Search Match Highlight */}
+                          {searchQuery && ((loc.custom_message?.en?.toLowerCase().includes(searchQuery.toLowerCase())) || (loc.custom_message?.ur?.includes(searchQuery))) && (
+                            <p className="text-[10px] text-blue-500 mt-1 italic"><i className="fas fa-bullhorn mr-1"></i>Match in announcement</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => startEditLocation(loc)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><i className="fas fa-edit"></i></button>
+                          <button onClick={() => deleteLocation(loc.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><i className="fas fa-trash"></i></button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* No Results State */}
+                    {data.filter(loc =>
+                      !searchQuery ||
+                      loc.name_en.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      loc.name_ur.includes(searchQuery)
+                    ).length === 0 && (
+                        <div className="col-span-full py-12 text-center text-gray-400">
+                          <i className="fas fa-search text-4xl mb-2 opacity-20"></i>
+                          <p>No locations match "{searchQuery}"</p>
+                        </div>
+                      )}
+                  </div>
                 </div>
               </>
             )}
