@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 10px;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  background-color: #f1f5f9;
+  /* slate-100 - Not white! */
+  overscroll-behavior-y: auto;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Traditional Urdu Font */
+.font-urdu {
+  font-family: 'Noto Nastaliq Urdu', serif;
+  line-height: 2.2;
+  letter-spacing: 0px;
+}
+
+/* Modern Heading Urdu Font */
+.font-urdu-heading {
+  font-family: 'Gulzar', serif;
+  line-height: 1.6;
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .7;
+  }
+}
+
+@keyframes event-blink {
+
+  0%,
+  100% {
+    background-color: #059669;
+  }
+
+  50% {
+    background-color: #10b981;
+  }
+}
+
+.animate-event-blink {
+  animation: event-blink 0.8s infinite;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
