@@ -6,6 +6,7 @@ import { RamadanTiming, Language, AppSettings, LocationData, Note } from './type
 import { requestNotificationPermission, playAlarm } from './services/notificationService';
 import { prefetchAudio } from './services/audioService';
 import { syncTimeWithNetwork, getTrueDate, isTimeSynced, getLocalDateString } from './services/timeService';
+import { Analytics } from '@vercel/analytics/react';
 
 // Components
 import Countdown from './components/Countdown';
