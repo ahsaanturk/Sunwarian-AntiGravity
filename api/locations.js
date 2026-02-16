@@ -22,7 +22,8 @@ const LocationSchema = new mongoose.Schema({
   timings: [TimingSchema],
   whatsapp_number: String,
   custom_message: { en: String, ur: String },
-  whatsapp_community: String
+  whatsapp_community: String,
+  nearby_areas: mongoose.Schema.Types.Mixed // Flexible: accepts string (legacy) or { en, ur } (new)
 });
 
 // Prevent overwriting model if already compiled
