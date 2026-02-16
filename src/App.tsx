@@ -9,8 +9,9 @@ import { syncTimeWithNetwork, getTrueDate, isTimeSynced, getLocalDateString } fr
 
 // Components
 import Countdown from './components/Countdown';
-import AdminPanel from './components/AdminPanel';
-import GlobalAdminPanel from './components/GlobalAdminPanel';
+// Lazy Load Admin Panels to reduce initial bundle size
+const AdminPanel = React.lazy(() => import('./components/AdminPanel'));
+const GlobalAdminPanel = React.lazy(() => import('./components/GlobalAdminPanel'));
 import Calendar from './components/Calendar';
 import DuaSlider from './components/DuaSlider';
 import Header from './components/Header';
@@ -729,27 +730,31 @@ const MainApp = () => {
             </nav>
 
             {isLocalAdminOpen && (
-                <AdminPanel
-                    data={activeTimings}
-                    onUpdate={(newData) => {
-                        const newMaster = masterData.map(l => l.id === settings.selectedLocationId ? { ...l, timings: newData } : l);
-                        setMasterData(newMaster);
-                        saveStoredData(newMaster);
-                    }}
-                    translation={t} settings={settings} onUpdateSettings={handleSettingsUpdate}
-                    onClose={() => { setIsLocalAdminOpen(false); navigate('/settings'); }}
-                />
+                <React.Suspense fallback={<div className="fixed inset-0 flex items-center justify-center z-50 bg-white/80 backdrop-blur-sm"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>}>
+                    <AdminPanel
+                        data={activeTimings}
+                        onUpdate={(newData) => {
+                            const newMaster = masterData.map(l => l.id === settings.selectedLocationId ? { ...l, timings: newData } : l);
+                            setMasterData(newMaster);
+                            saveStoredData(newMaster);
+                        }}
+                        translation={t} settings={settings} onUpdateSettings={handleSettingsUpdate}
+                        onClose={() => { setIsLocalAdminOpen(false); navigate('/settings'); }}
+                    />
+                </React.Suspense>
             )}
 
             {isGlobalAdminOpen && (
-                <GlobalAdminPanel
-                    data={masterData}
-                    onUpdate={(m) => { setMasterData(m); saveStoredData(m); }}
-                    notes={notesData}
-                    onUpdateNotes={(n) => { setNotesData(n); saveStoredNotes(n); }}
-                    translation={t}
-                    onClose={() => { setIsGlobalAdminOpen(false); navigate('/'); }}
-                />
+                <React.Suspense fallback={<div className="fixed inset-0 flex items-center justify-center z-50 bg-white/80 backdrop-blur-sm"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div></div>}>
+                    <GlobalAdminPanel
+                        data={masterData}
+                        onUpdate={(m) => { setMasterData(m); saveStoredData(m); }}
+                        notes={notesData}
+                        onUpdateNotes={(n) => { setNotesData(n); saveStoredNotes(n); }}
+                        translation={t}
+                        onClose={() => { setIsGlobalAdminOpen(false); navigate('/'); }}
+                    />
+                </React.Suspense>
             )}
 
             {/* iOS / Manual Install Instructions Modal */}
