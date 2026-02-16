@@ -99,6 +99,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
     try {
       const parsedTimings: RamadanTiming[] = JSON.parse(timingsJson);
       let newData: LocationData[];
+      // Generate ID from name if new, otherwise keep existing
       let locId = editingLocId === 'new' ? locNameEn.toLowerCase().replace(/\s+/g, '-') : editingLocId!;
 
       const locDataPartial = {
@@ -107,7 +108,7 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
         timings: parsedTimings,
         whatsapp_number: locWhatsapp,
         whatsapp_community: locCommunity,
-        nearby_areas: { en: locNearbyAreasEn, ur: locNearbyAreasUr },
+        nearby_areas: { en: locNearbyAreasEn || '', ur: locNearbyAreasUr || '' }, // Ensure object structure
         custom_message: { en: locMessageEn, ur: locMessageUr }
       };
 
@@ -117,6 +118,18 @@ const GlobalAdminPanel: React.FC<GlobalAdminPanelProps> = ({ data, onUpdate, not
           ...locDataPartial
         };
         newData = [...data, newLoc];
+
+        // CRITICAL FIX: Update any notes that were created with the temp ID
+        // to now point to the actual new location ID
+        const updatedNotes = notes.map(n =>
+          n.locationId === 'temp_id_replace_later' ? { ...n, locationId: locId } : n
+        );
+
+        // We need to trigger this update. 
+        // Since 'onUpdateNotes' is passed from parent, we call it here.
+        // We do this BEFORE onUpdate(newData) to ensure state consistency if parent re-renders
+        onUpdateNotes(updatedNotes);
+
       } else {
         newData = data.map(l => l.id === editingLocId ? { ...l, ...locDataPartial } : l);
       }

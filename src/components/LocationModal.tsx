@@ -36,7 +36,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
                 <div className="px-5 pb-3 bg-white flex-shrink-0">
                     <div className="bg-gray-100 rounded-2xl px-4 py-3 flex items-center gap-3 border border-transparent focus-within:border-emerald-100 focus-within:bg-white focus-within:shadow-md transition-all">
                         <i className="fas fa-search text-gray-400"></i>
-                        <input autoFocus value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t.searchPlaceholder} className="bg-transparent border-none outline-none w-full text-base font-bold text-gray-700 placeholder-gray-400" />
+                        <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t.searchPlaceholder} className="bg-transparent border-none outline-none w-full text-base font-bold text-gray-700 placeholder-gray-400" />
                         {searchQuery && <button onClick={() => setSearchQuery('')} className="text-gray-400 hover:text-red-500"><i className="fas fa-times-circle"></i></button>}
                     </div>
                 </div>

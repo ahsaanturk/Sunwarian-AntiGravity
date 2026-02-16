@@ -18,7 +18,7 @@ export interface LocationData {
   whatsapp_number?: string;
   custom_message?: { en: string; ur: string };
   whatsapp_community?: string;
-  nearby_areas?: { en: string; ur: string }; // Bilingual list of nearby villages/areas
+  nearby_areas?: string | { en: string; ur: string }; // Bilingual list (new) or string (legacy)
 }
 
 export interface Note {
