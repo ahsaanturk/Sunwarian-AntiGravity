@@ -21,7 +21,22 @@ export const sendNotification = (title: string, body: string) => {
   }
 };
 
+let currentAudioCtx: AudioContext | null = null;
+
+export const stopAlarm = () => {
+  if (currentAudioCtx) {
+    currentAudioCtx.close();
+    currentAudioCtx = null;
+  }
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+};
+
 export const playAlarm = (type: 'beep' | 'alarm', tone: 'digital' | 'islamic' | 'voice' = 'digital', eventType?: 'sehri' | 'iftar') => {
+  // Stop any currently playing alarm first
+  stopAlarm();
+
   if (tone === 'voice') {
     speakMessage(type, eventType);
     return;
@@ -31,6 +46,7 @@ export const playAlarm = (type: 'beep' | 'alarm', tone: 'digital' | 'islamic' | 
   if (!AudioContext) return;
 
   const ctx = new AudioContext();
+  currentAudioCtx = ctx;
 
   const playTone = (freq: number, start: number, duration: number, vol: number = 0.2, type: 'sine' | 'triangle' = 'sine') => {
     const oscillator = ctx.createOscillator();
