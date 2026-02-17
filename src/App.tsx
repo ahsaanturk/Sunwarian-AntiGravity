@@ -664,12 +664,12 @@ const MainApp = () => {
             {isNotificationModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsNotificationModalOpen(false)}></div>
-                    <div className="relative bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden animate-slide-up z-10">
+                    <div className="relative bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden animate-slide-up z-10 max-h-[90vh] flex flex-col">
                         <div className="w-full flex justify-center pt-3 pb-2 bg-white flex-shrink-0 cursor-pointer" onClick={() => setIsNotificationModalOpen(false)}>
                             <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
                         </div>
 
-                        <div className="p-6 pb-10">
+                        <div className="p-6 pb-10 overflow-y-auto">
                             <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <i className="fas fa-bell text-emerald-600"></i>
                                 {t.notificationsSetting}
