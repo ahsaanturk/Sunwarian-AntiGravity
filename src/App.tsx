@@ -37,6 +37,7 @@ const App = () => {
     return (
         <HashRouter>
             <MainApp />
+            <Analytics />
         </HashRouter>
     );
 };
@@ -512,7 +513,7 @@ const MainApp = () => {
                                     <span className={`w-2 h-2 rounded-full ${timeIsVerified ? 'bg-emerald-500 animate-pulse' : 'bg-yellow-500'}`}></span>
                                     {timeIsVerified
                                         ? (settings.language === 'ur' ? 'انٹرنیٹ سے درست وقت حاصل کیا جا رہا ہے' : 'Accurate time fetching from Internet')
-                                        : (settings.language === 'ur' ? 'آخری انٹرنیٹ رابطے کی بنیاد پر پیشین گوئی' : 'Predicted based on last internet fetch')
+                                        : (settings.language === 'ur' ? 'آخری انٹرنیٹ رابطے کی بنیا�� پر پیشین گوئی' : 'Predicted based on last internet fetch')
                                     }
                                     <div className="relative group ml-1">
                                         <i className="fas fa-info-circle text-gray-400 cursor-pointer hover:text-emerald-500 transition-colors"></i>
